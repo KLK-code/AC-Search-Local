@@ -2,6 +2,8 @@
 
 > 本项目是基于原作者 [AC](https://greasyfork.org/scripts/14178) 的 GPL-3.0 开源项目的改造版本，仅供学习交流使用。
 
+> **声明：本项目完全使用 [opencode](https://opencode.ai) + DeepSeek V4 Pro 辅助完成编写、调试、审查和优化。所有代码修改均经过自动化语法检查和人工验证。**
+
 ## 功能
 
 | 功能 | 说明 |
@@ -46,9 +48,7 @@
 | 文件 | 说明 |
 |------|------|
 | `AC-Search-Local.user.js` | 主脚本文件 |
-| `ac.js` | 原作者线上发布版（GPL-3.0） |
-| `AC_Search.js` | 原作者次世代版源码（GPL-3.0） |
-| `bilibili_greater.js` | 参考脚本 — Vue 3 设置面板架构 |
+| `references/` | 原始参考文件（gitignore 排除） |
 | `backups/` | 版本迭代备份（gitignore 排除） |
 
 ## 版本
