@@ -1,0 +1,6 @@
+backups/
+*.backup.js
+node_modules/
+.env
+*.tmp
+references/
