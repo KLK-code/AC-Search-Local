@@ -5,7 +5,7 @@
 // @description  本地化搜索引擎优化：去重定向、去广告、Favicon、双列/多列布局、暗黑模式、自动翻页、域名拦截
 // @author       AC (Local Fork)
 // @license      GPL-3.0-only
-// @version      1.0.19
+// @version      1.0.20
 // @run-at       document-start
 // @namespace    ac-search-local
 // @grant        GM_getValue
@@ -4052,15 +4052,14 @@ body[baidu] #foot a:hover {
       document.removeEventListener('mouseup', onUp);
       container.style.cursor = 'grab';
       if (moved) {
-        const w = container.offsetWidth;
-        const h = container.offsetHeight;
         const rect = container.getBoundingClientRect();
-        const pos = clampAndSnap(rect.left, rect.top, w, h);
-        container.style.right = '';
-        container.style.bottom = '';
-        container.style.left = pos.left + 'px';
-        container.style.top = pos.top + 'px';
-        GM.setValue(BTN_POS_KEY, JSON.stringify({ left: pos.left, top: pos.top }));
+        const right = Math.round(window.innerWidth - rect.right);
+        const bottom = Math.round(window.innerHeight - rect.bottom);
+        container.style.right = right + 'px';
+        container.style.bottom = bottom + 'px';
+        container.style.left = '';
+        container.style.top = '';
+        GM.setValue(BTN_POS_KEY, JSON.stringify({ right, bottom }));
       }
       grip.style.opacity = '0';
       // 延迟清零：让同步 click 事件能读到 moved=true 从而跳过
@@ -4082,14 +4081,11 @@ body[baidu] #foot a:hover {
 
     function tryRestorePos() {
       if (!container.offsetWidth) { setTimeout(tryRestorePos, 50); return; } // 未 layout
-      if (!savedPos || typeof savedPos.left !== 'number' || typeof savedPos.top !== 'number') return; // 无保存位置=保持默认CSS
-      const w = container.offsetWidth;
-      const h = container.offsetHeight;
-      const pos = clampAndSnap(savedPos.left, savedPos.top, w, h);
-      container.style.right = '';
-      container.style.bottom = '';
-      container.style.left = pos.left + 'px';
-      container.style.top = pos.top + 'px';
+      if (!savedPos || typeof savedPos.right !== 'number' || typeof savedPos.bottom !== 'number') return; // 无保存位置=保持默认CSS
+      container.style.right = Math.max(0, savedPos.right) + 'px';
+      container.style.bottom = Math.max(0, savedPos.bottom) + 'px';
+      container.style.left = '';
+      container.style.top = '';
     }
   }
 
