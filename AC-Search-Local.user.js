@@ -3976,7 +3976,7 @@ body[baidu] #foot a:hover {
     // 加载保存的位置（兼容 Tampermonkey/Violentmonkey）
     let savedPos = null;
     (async () => {
-      try { savedPos = await GM.getValue(BTN_POS_KEY, null); } catch (e) { /* ignore */ }
+      try { const raw = await GM.getValue(BTN_POS_KEY, null); savedPos = (raw && typeof raw === 'string') ? JSON.parse(raw) : raw; } catch (e) { /* ignore */ }
       tryRestorePos();
     })();
 
