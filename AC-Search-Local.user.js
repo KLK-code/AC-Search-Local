@@ -5,7 +5,7 @@
 // @description  本地化搜索引擎优化：去重定向、去广告、Favicon、双列/多列布局、暗黑模式、自动翻页、域名拦截
 // @author       AC (Local Fork)
 // @license      GPL-3.0-only
-// @version      1.0.16
+// @version      1.0.17
 // @run-at       document-start
 // @namespace    ac-search-local
 // @grant        GM_getValue
@@ -3998,7 +3998,11 @@ body[baidu] #foot a:hover {
     btn.textContent = '\u2699';
     btn.style.cssText = 'display:block;width:42px;height:42px;background:#4e6ef2;color:#fff;font-size:20px;font-weight:700;border:none;border-radius:50%;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.25);line-height:42px;text-align:center;padding:0;transition:transform 0.15s,background 0.2s;';
     btn.title = 'AC-Search 设置';
-    btn.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); toggleSettings(); });
+    btn.addEventListener('click', (e) => {
+      if (moved) return; // 拖拽过则不打开设置
+      e.preventDefault(); e.stopPropagation();
+      toggleSettings();
+    });
     btn.addEventListener('mouseenter', () => { btn.style.background = '#3d5bd9'; btn.style.transform = 'scale(1.1)'; });
     btn.addEventListener('mouseleave', () => { btn.style.background = '#4e6ef2'; btn.style.transform = 'scale(1)'; });
     container.appendChild(btn);
@@ -4030,6 +4034,8 @@ body[baidu] #foot a:hover {
         if (Math.abs(e.clientX - startX) <= THRESHOLD && Math.abs(e.clientY - startY) <= THRESHOLD) return;
         moved = true;
         container.style.cursor = 'grabbing';
+        container.style.right = '';
+        container.style.bottom = '';
         container.style.left = origLeft + 'px';
         container.style.top = origTop + 'px';
       }
@@ -4049,6 +4055,8 @@ body[baidu] #foot a:hover {
         const h = container.offsetHeight;
         const rect = container.getBoundingClientRect();
         const pos = clampAndSnap(rect.left, rect.top, w, h);
+        container.style.right = '';
+        container.style.bottom = '';
         container.style.left = pos.left + 'px';
         container.style.top = pos.top + 'px';
         GM.setValue(BTN_POS_KEY, JSON.stringify({ left: pos.left, top: pos.top }));
@@ -4059,7 +4067,6 @@ body[baidu] #foot a:hover {
     }
 
     container.addEventListener('mousedown', function (e) {
-      if (e.target.tagName === 'BUTTON') return; // 不拦截按钮点击
       e.preventDefault();
       dragging = true;
       moved = false;
@@ -4077,6 +4084,8 @@ body[baidu] #foot a:hover {
         const w = container.offsetWidth || 42;
         const h = container.offsetHeight || 50;
         const pos = clampAndSnap(savedPos.left, savedPos.top, w, h);
+        container.style.right = '';
+        container.style.bottom = '';
         container.style.left = pos.left + 'px';
         container.style.top = pos.top + 'px';
       } else {
