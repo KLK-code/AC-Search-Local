@@ -5,7 +5,7 @@
 // @description  本地化搜索引擎优化：去重定向、去广告、Favicon、双列/多列布局、暗黑模式、自动翻页、域名拦截
 // @author       AC (Local Fork)
 // @license      GPL-3.0-only
-// @version      1.0.17
+// @version      1.0.18
 // @run-at       document-start
 // @namespace    ac-search-local
 // @grant        GM_getValue
@@ -4061,9 +4061,9 @@ body[baidu] #foot a:hover {
         container.style.top = pos.top + 'px';
         GM.setValue(BTN_POS_KEY, JSON.stringify({ left: pos.left, top: pos.top }));
       }
-      moved = false;
-      dragging = false;
       grip.style.opacity = '0';
+      // 延迟清零：让同步 click 事件能读到 moved=true 从而跳过
+      setTimeout(() => { moved = false; dragging = false; }, 0);
     }
 
     container.addEventListener('mousedown', function (e) {
@@ -4080,21 +4080,20 @@ body[baidu] #foot a:hover {
     });
 
     function restorePos() {
+      const w = container.offsetWidth;
+      if (!w) { setTimeout(restorePos, 100); return; } // 容器未 layout，延迟重试
+      const h = container.offsetHeight || 50;
       if (savedPos && typeof savedPos.left === 'number' && typeof savedPos.top === 'number') {
-        const w = container.offsetWidth || 42;
-        const h = container.offsetHeight || 50;
         const pos = clampAndSnap(savedPos.left, savedPos.top, w, h);
         container.style.right = '';
         container.style.bottom = '';
         container.style.left = pos.left + 'px';
         container.style.top = pos.top + 'px';
       } else {
-        // 默认右下角
         container.style.right = '20px';
         container.style.bottom = '80px';
       }
     }
-    setTimeout(restorePos, 100);
   }
 
   // ===================== 自动翻页 =====================
