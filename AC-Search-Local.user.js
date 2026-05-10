@@ -5,7 +5,7 @@
 // @description  本地化搜索引擎优化：去重定向、去广告、Favicon、双列/多列布局、暗黑模式、自动翻页、域名拦截
 // @author       AC (Local Fork)
 // @license      GPL-3.0-only
-// @version      1.0.18
+// @version      1.0.19
 // @run-at       document-start
 // @namespace    ac-search-local
 // @grant        GM_getValue
@@ -3977,12 +3977,13 @@ body[baidu] #foot a:hover {
     let savedPos = null;
     (async () => {
       try { savedPos = await GM.getValue(BTN_POS_KEY, null); } catch (e) { /* ignore */ }
-      restorePos();
+      tryRestorePos();
     })();
 
     const container = document.createElement('div');
     container.id = 'ac-float-btn';
-    container.style.cssText = 'position:fixed;z-index:10000000;cursor:grab;user-select:none;';
+    // 默认右下角用 CSS，不是 JS — 避免 offsetWidth=0 竞态
+    container.style.cssText = 'position:fixed;z-index:10000000;cursor:grab;user-select:none;right:20px;bottom:80px;';
     document.body.appendChild(container);
 
     // 拖拽手柄（hover 显示）
@@ -4079,20 +4080,16 @@ body[baidu] #foot a:hover {
       document.addEventListener('mouseup', onUp);
     });
 
-    function restorePos() {
+    function tryRestorePos() {
+      if (!container.offsetWidth) { setTimeout(tryRestorePos, 50); return; } // 未 layout
+      if (!savedPos || typeof savedPos.left !== 'number' || typeof savedPos.top !== 'number') return; // 无保存位置=保持默认CSS
       const w = container.offsetWidth;
-      if (!w) { setTimeout(restorePos, 100); return; } // 容器未 layout，延迟重试
-      const h = container.offsetHeight || 50;
-      if (savedPos && typeof savedPos.left === 'number' && typeof savedPos.top === 'number') {
-        const pos = clampAndSnap(savedPos.left, savedPos.top, w, h);
-        container.style.right = '';
-        container.style.bottom = '';
-        container.style.left = pos.left + 'px';
-        container.style.top = pos.top + 'px';
-      } else {
-        container.style.right = '20px';
-        container.style.bottom = '80px';
-      }
+      const h = container.offsetHeight;
+      const pos = clampAndSnap(savedPos.left, savedPos.top, w, h);
+      container.style.right = '';
+      container.style.bottom = '';
+      container.style.left = pos.left + 'px';
+      container.style.top = pos.top + 'px';
     }
   }
 
