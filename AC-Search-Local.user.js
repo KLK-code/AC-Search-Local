@@ -5,7 +5,7 @@
 // @description  本地化搜索引擎优化：去重定向、去广告、Favicon、双列/多列布局、暗黑模式、自动翻页、域名拦截
 // @author       AC (Local Fork)
 // @license      GPL-3.0-only
-// @version      1.0.27
+// @version      1.0.28
 // @run-at       document-start
 // @namespace    ac-search-local
 // @grant        GM_getValue
@@ -1270,7 +1270,7 @@ form.fm {
 }
 #container.sam_newgrid #content_left,
 body[baidu].pc-fresh-wrapper-con #container.sam_newgrid #content_left {
-  width: 80%;
+  width: 80% !important;
 }
 .pc-fresh-wrapper .wrapper_new #s_tab .s_tab_inner.s-old-tag,
 .pc-fresh-wrapper .wrapper_new.wrapper_s #s_tab .s_tab_inner.s-old-tag,
@@ -1287,8 +1287,8 @@ body[baidu].pc-fresh-wrapper-con #container.sam_newgrid #content_left {
   position: relative;
   padding-left: 2%;
   float: unset;
-  width: 85%;
-  max-width: 1300px;
+  width: 85% !important;
+  max-width: 1300px !important;
   margin-bottom: 30px;
 }
 body[news] #wrapper #content_left > div:not([class]):not([id]) {
