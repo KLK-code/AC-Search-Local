@@ -5,7 +5,7 @@
 // @description  本地化搜索引擎优化：去重定向、去广告、Favicon、双列/多列布局、暗黑模式、自动翻页、域名拦截
 // @author       AC (Local Fork)
 // @license      GPL-3.0-only
-// @version      1.0.30
+// @version      1.0.31
 // @run-at       document-start
 // @namespace    ac-search-local
 // @grant        GM_getValue
@@ -562,18 +562,9 @@ form.fm .s_ipt_wr.bg {
 #container.sam_newgrid #content_left .result,
 #container.sam_newgrid #content_left .result-op,
 #container.sam_newgrid #content_left > .c-container {
-  width: 670px;
-  padding: 0 8px 15px 20px;
-  margin-top: 0;
-  margin-left: 0;
-  margin-bottom: 30px;
-  border-radius: 8px;
-  background-color: #fff;
-  box-sizing: border-box;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  /* 初始不可见，由 JS 或通用类触发展示 */
+  width: 100% !important;
+  max-width: unset;
+  box-sizing: border-box !important;
 }
 #wrapper #rs.ac-entry-ani,
 #wrapper #content_left .result.ac-entry-ani,
@@ -1285,7 +1276,7 @@ body[baidu].pc-fresh-wrapper-con #container.sam_newgrid #content_left {
 #wrapper #content_left,
 #container.sam_newgrid #content_left {
   display: grid;
-  grid-template-columns: repeat(2, 48%);
+  grid-template-columns: repeat(2, 46%);
   grid-gap: 0 20px;
   grid-template-areas: "xmain xmain";
   margin: 0 auto;
