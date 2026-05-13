@@ -5,7 +5,7 @@
 // @description  本地化搜索引擎优化：去重定向、去广告、Favicon、双列/多列布局、暗黑模式、自动翻页、域名拦截
 // @author       AC (Local Fork)
 // @license      GPL-3.0-only
-// @version      1.0.50
+// @version      1.0.51
 // @run-at       document-start
 // @namespace    ac-search-local
 // @grant        GM_getValue
@@ -4727,11 +4727,6 @@ body[baidu] #foot a:hover {
   // 标签页
   const TABS = [
     { key: 'general', label: '通用' },
-    { key: 'baidu', label: '百度' },
-    { key: 'google', label: '谷歌' },
-    { key: 'bing', label: '必应' },
-    { key: 'duck', label: '鸭鸭' },
-    { key: 'haosou', label: '好搜' },
   ];
 
   const SettingsPanel = defineComponent({
@@ -4808,8 +4803,11 @@ body[baidu] #foot a:hover {
           toggleItem('启用去广告', 'isAdsEnable', cfg),
           toggleItem('启用Favicon图标', 'isFaviconEnable', cfg),
           toggleItem('启用自动翻页', 'isAutopage', cfg),
-          toggleItem('启用回到顶部按钮', 'showBackToTop', cfg),
+          toggleItem('启用转到顶部按钮', 'showBackToTop', cfg),
           toggleItem('启用计数器', 'isCounterEnable', cfg),
+
+          h('div', { style: { fontSize: '13px', fontWeight: 'bold', color: '#4e6ef2', margin: '12px 0 8px', borderBottom: '1px solid #eee', paddingBottom: '4px' } }, '支持网站'),
+          h('div', { style: { fontSize: '12px', color: '#666', lineHeight: '1.8' } }, '百度 · Google · Bing · DuckDuckGo · DogeDoge · 好搜(360) · 百度学术 · Google Scholar'),
 
           h('div', { style: { fontSize: '13px', fontWeight: 'bold', color: '#4e6ef2', margin: '12px 0 8px', borderBottom: '1px solid #eee', paddingBottom: '4px' } }, '显示设置'),
           h('div', { style: { margin: '8px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' } }, [
@@ -4872,17 +4870,6 @@ body[baidu] #foot a:hover {
           h('div', { style: { marginTop: '16px', display: 'flex', gap: '10px' } }, [
             h('button', { onClick: resetAll, style: { padding: '6px 16px', background: '#e74c3c', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' } }, '重置默认'),
           ]),
-        ]) : null,
-
-        // 引擎特定设置
-        activeTab.value === 'baidu' ? h('div', {}, [
-          toggleItem('移除搜索建议', 'baidu_doRemoveSug', cfg),
-        ]) : null,
-        activeTab.value === 'google' ? h('div', {}, [
-          toggleItem('使用百度Logo', 'google_useBaiduLogo', cfg),
-        ]) : null,
-        activeTab.value === 'duck' ? h('div', {}, [
-          toggleItem('优化鸭鸭', 'duck_optimizeDuck', cfg),
         ]) : null,
       ];
     },
