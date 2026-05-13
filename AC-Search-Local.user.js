@@ -5,7 +5,7 @@
 // @description  本地化搜索引擎优化：去重定向、去广告、Favicon、双列/多列布局、暗黑模式、自动翻页、域名拦截
 // @author       AC (Local Fork)
 // @license      GPL-3.0-only
-// @version      1.0.32
+// @version      1.0.33
 // @run-at       document-start
 // @namespace    ac-search-local
 // @grant        GM_getValue
@@ -562,13 +562,25 @@ form.fm .s_ipt_wr.bg {
 #container.sam_newgrid #content_left .result,
 #container.sam_newgrid #content_left .result-op,
 #container.sam_newgrid #content_left > .c-container {
+  width: 670px;
+  padding: 0 8px 15px 20px;
+  margin-top: 0;
   margin-left: 0;
   margin-right: 0;
+  margin-bottom: 30px;
+  border-radius: 8px;
+  background-color: #fff;
+  box-sizing: border-box;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 #wrapper #rs.ac-entry-ani,
 #wrapper #content_left .result.ac-entry-ani,
 #wrapper #content_left .result-op.ac-entry-ani,
-#wrapper #content_left > .c-container.ac-entry-ani {
+#wrapper #content_left > .c-container.ac-entry-ani,
+#container.sam_newgrid #content_left .result.ac-entry-ani,
+#container.sam_newgrid #content_left > .c-container.ac-entry-ani {
   animation: ani_topTobuttom 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 #wrapper #rs div[class*='_aladdin'],
@@ -580,8 +592,11 @@ form.fm .s_ipt_wr.bg {
 #wrapper #content_left > .c-container:hover,
 #wrapper #content_left > .result:hover,
 #wrapper #content_left > .result-op:hover,
-#wrapper #content_left > .c-container:hover article {
-  border: 1px solid rgba(0, 0, 0, 0.1);
+#wrapper #content_left > .c-container:hover article,
+#container.sam_newgrid #content_left > .c-container:hover,
+#container.sam_newgrid #content_left > .result:hover,
+#container.sam_newgrid #content_left > .result-op:hover {
+  border: 1px solid rgba(0, 0, 0, 0.12);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
   transform: translateY(-2px);
 }
@@ -594,7 +609,9 @@ form.fm .s_ipt_wr.bg {
 }
 #wrapper #content_left > .result[tpl='soft'] .op-soft-title,
 #wrapper #content_left > .result h3[class*='title'],
-#wrapper #content_left > .c-container h3[class*='title'] {
+#wrapper #content_left > .c-container h3[class*='title'],
+#container.sam_newgrid #content_left > .result h3[class*='title'],
+#container.sam_newgrid #content_left > .c-container h3[class*='title'] {
   background-color: #f8f8f8;
   margin: 0px -8px 10px -20px;
   padding: 8px 20px 5px;
