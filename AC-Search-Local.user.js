@@ -4344,6 +4344,11 @@ body[baidu] #foot a:hover {
       const docH = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
       if (st + window.innerHeight >= docH) loadNextPage();
     }, 200));
+
+    // 内容太短无法产生滚动条 → 直接翻页
+    if (config.isAutopage && !isPageLoading && Math.max(document.documentElement.scrollHeight, document.body.scrollHeight) <= window.innerHeight) {
+      loadNextPage();
+    }
   }
 
   // ===================== Google 双列标记 =====================
