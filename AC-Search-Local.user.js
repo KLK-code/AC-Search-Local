@@ -5,7 +5,7 @@
 // @description  本地化搜索引擎优化：去重定向、去广告、Favicon、双列/多列布局、暗黑模式、自动翻页、域名拦截
 // @author       AC (Local Fork)
 // @license      GPL-3.0-only
-// @version      1.0.48
+// @version      1.0.49
 // @run-at       document-start
 // @namespace    ac-search-local
 // @grant        GM_getValue
@@ -243,6 +243,7 @@
     isCounterEnable: false,
     isALineDisable: false,
     isDarkModeEnable: true,
+    showBackToTop: true,
     adsStyleMode: 3,
     customStyleEnable: false,
     customStyleLess: '',
@@ -4111,6 +4112,24 @@ body[baidu] #foot a:hover {
     }
   }
 
+  function insertBackToTopButton() {
+    if (!config.showBackToTop) return;
+    if (document.getElementById('ac-top-btn')) return;
+
+    const btn = document.createElement('button');
+    btn.id = 'ac-top-btn';
+    btn.textContent = '\u25B2';
+    btn.title = '回到顶部';
+    btn.style.cssText = 'position:fixed;bottom:110px;right:20px;z-index:10000000;width:42px;height:42px;background:#4e6ef2;color:#fff;font-size:18px;font-weight:700;border:none;border-radius:50%;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.25);opacity:0;transition:opacity 0.3s;';
+    btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+    window.addEventListener('scroll', $.throttle(() => {
+      btn.style.opacity = (window.scrollY || document.documentElement.scrollTop) > 400 ? '1' : '0';
+    }, 200));
+
+    document.body.appendChild(btn);
+  }
+
   // ===================== 自动翻页 =====================
   let pageNum = 1;
   let pageUrl = '';
@@ -4720,6 +4739,7 @@ body[baidu] #foot a:hover {
           toggleItem('启用去广告', 'isAdsEnable', cfg),
           toggleItem('启用Favicon图标', 'isFaviconEnable', cfg),
           toggleItem('启用自动翻页', 'isAutopage', cfg),
+          toggleItem('启用回到顶部按钮', 'showBackToTop', cfg),
           toggleItem('启用计数器', 'isCounterEnable', cfg),
 
           h('div', { style: { fontSize: '13px', fontWeight: 'bold', color: '#4e6ef2', margin: '12px 0 8px', borderBottom: '1px solid #eee', paddingBottom: '4px' } }, '显示设置'),
@@ -4919,6 +4939,7 @@ body[baidu] #foot a:hover {
       $.waitEl('body', () => {
         setTimeout(() => {
           insertMenuButton();
+          insertBackToTopButton();
           bindPagerScroll();
         }, 1000);
       });
