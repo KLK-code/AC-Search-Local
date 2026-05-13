@@ -5,7 +5,7 @@
 // @description  本地化搜索引擎优化：去重定向、去广告、Favicon、双列/多列布局、暗黑模式、自动翻页、域名拦截
 // @author       AC (Local Fork)
 // @license      GPL-3.0-only
-// @version      1.0.39
+// @version      1.0.40
 // @run-at       document-start
 // @namespace    ac-search-local
 // @grant        GM_getValue
@@ -4335,20 +4335,29 @@ body[baidu] #foot a:hover {
 
   function bindPagerScroll() {
     let lastScroll = window.scrollY || document.documentElement.scrollTop;
+
+    function tryLoadMore() {
+      if (!config.isAutopage || isPageLoading) return;
+      const docH = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
+      if (window.scrollY + window.innerHeight >= docH) loadNextPage();
+    }
+
+    // scroll 事件 — 下滑触底翻页
     window.addEventListener('scroll', $.throttle(function () {
       const st = window.scrollY || document.documentElement.scrollTop;
-      if (st <= lastScroll) return; // 只下滑
+      if (st <= lastScroll) return;
       lastScroll = st;
-      if (!config.isAutopage || isPageLoading) return;
-
-      const docH = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
-      if (st + window.innerHeight >= docH) loadNextPage();
+      tryLoadMore();
     }, 200));
 
-    // 内容太短无法产生滚动条 → 直接翻页
-    if (config.isAutopage && !isPageLoading && Math.max(document.documentElement.scrollHeight, document.body.scrollHeight) <= window.innerHeight) {
-      loadNextPage();
-    }
+    // wheel 事件 — 已触底还向下滚也翻页（百度等引擎 scroll 事件不稳定）
+    window.addEventListener('wheel', $.throttle(function (e) {
+      if (e.deltaY <= 0) return;
+      tryLoadMore();
+    }, 200), { passive: true });
+
+    // 初始高度检测 — 无滚动条直接翻页
+    tryLoadMore();
   }
 
   // ===================== Google 双列标记 =====================
