@@ -5,7 +5,7 @@
 // @description  本地化搜索引擎优化：去重定向、去广告、Favicon、双列/多列布局、暗黑模式、自动翻页、域名拦截
 // @author       AC (Local Fork)
 // @license      GPL-3.0-only
-// @version      1.0.37
+// @version      1.0.38
 // @run-at       document-start
 // @namespace    ac-search-local
 // @grant        GM_getValue
@@ -4249,6 +4249,11 @@ body[baidu] #foot a:hover {
           /* ignore */
         }
         isPageLoading = false;
+        // 内容高度仍不够 → 继续加载下一页
+        setTimeout(() => {
+          if (!config.isAutopage || isPageLoading) return;
+          if (Math.max(document.documentElement.scrollHeight, document.body.scrollHeight) <= window.innerHeight) loadNextPage();
+        }, 300);
       },
       ontimeout: function () {
         loader.remove();
