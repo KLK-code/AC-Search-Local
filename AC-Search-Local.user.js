@@ -5,7 +5,7 @@
 // @description  本地化搜索引擎优化：去重定向、去广告、Favicon、双列/多列布局、暗黑模式、自动翻页、域名拦截
 // @author       AC (Local Fork)
 // @license      GPL-3.0-only
-// @version      1.0.51
+// @version      1.0.52
 // @run-at       document-start
 // @namespace    ac-search-local
 // @grant        GM_getValue
@@ -3325,6 +3325,7 @@ body[baidu] #foot a:hover {
       display: none !important;
     }
     .ULSxyf:empty, .s6JM6d:empty { display: none !important; }
+    .focusSentinel { display: none !important; position: absolute !important; height: 0 !important; width: 0 !important; overflow: hidden !important; grid-column: unset !important; grid-row: unset !important; }
   `;
 
   function multiColGridCSS(site, cols) {
@@ -4571,6 +4572,7 @@ body[baidu] #foot a:hover {
       handleScholarRedirect();
       handleMobileBaidu();
       if (currentSite === 'google') removeGoogleMouseDown();
+      if (currentSite === 'google') document.querySelectorAll('.focusSentinel').forEach(el => { el.style.display = 'none'; });
 
       // 去广告
       if (config.isAdsEnable) {
@@ -4607,6 +4609,7 @@ body[baidu] #foot a:hover {
         handleScholarRedirect();
         handleMobileBaidu();
         if (currentSite === 'google') removeGoogleMouseDown();
+        if (currentSite === 'google') document.querySelectorAll('.focusSentinel').forEach(el => { el.style.display = 'none'; });
         if (config.isAdsEnable) {
           const remover = AD_REMOVERS[currentSite];
           if (remover) remover();
