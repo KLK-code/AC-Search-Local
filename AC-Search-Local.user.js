@@ -5,7 +5,7 @@
 // @description  本地化搜索引擎优化：去重定向、去广告、Favicon、双列/多列布局、暗黑模式、自动翻页、域名拦截
 // @author       AC (Local Fork)
 // @license      GPL-3.0-only
-// @version      1.0.21
+// @version      1.0.22
 // @run-at       document-start
 // @namespace    ac-search-local
 // @grant        GM_getValue
@@ -1708,7 +1708,7 @@ div[two-child],
   max-width: unset;
 }
 #main #rcnt #rhs {
-  display: none;
+  display: none !important;
 }
 .showRight #main #rcnt #rhs {
   display: unset;
@@ -2012,7 +2012,7 @@ div[two-child]:last-child:nth-child(odd) {
   display: none;
 }
 #main #rcnt #rhs {
-  display: none;
+  display: none !important;
 }
 #main #rcnt {
   display: grid;
@@ -3385,6 +3385,7 @@ body[baidu] #foot a:hover {
   }
 
   function updateRightDisplay() {
+    if (!document.body) return;
     if (+config.adsStyleMode >= 3 || !config.isRightDisplayEnable) {
       document.body.classList.remove('showRight');
     } else {
