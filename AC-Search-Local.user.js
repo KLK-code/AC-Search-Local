@@ -5,7 +5,7 @@
 // @description  本地化搜索引擎优化：去重定向、去广告、Favicon、双列/多列布局、暗黑模式、自动翻页、域名拦截
 // @author       AC (Local Fork)
 // @license      GPL-3.0-only
-// @version      1.0.35
+// @version      1.0.36
 // @run-at       document-start
 // @namespace    ac-search-local
 // @grant        GM_getValue
@@ -1990,11 +1990,6 @@ body[google] .rZj61 {
 
   // 谷歌双列
   const CSS_googleTwoPage = `/**Store GoogleTwoPageStyle**/
-/* 锁定 #rso 为 flex column — 阻止 Google 翻页后自动转为 grid 破坏已有布局 */
-#rso {
-  display: flex !important;
-  flex-direction: column !important;
-}
 div[two-father] {
   position: relative;
   float: unset;
@@ -4198,11 +4193,15 @@ body[baidu] #foot a:hover {
             pageItems.forEach(item => targetEl.parentNode?.insertBefore(item, targetEl));
           } else {
             targetEl.appendChild(sep);
+            // 翻页条目放入独立 grid 容器，双列排列，不影响已有元素
+            const pageGrid = document.createElement('div');
+            pageGrid.style.cssText = 'display:grid !important;grid-template-columns:repeat(2,1fr);gap:16px;grid-column:1/-1;width:100%!important;';
             pageItems.forEach((item, i) => {
               item.classList.add('ac-entry-ani');
               item.style.animationDelay = (i * 0.04) + 's';
-              targetEl.appendChild(item);
+              pageGrid.appendChild(item);
             });
+            targetEl.appendChild(pageGrid);
             if (currentSite === 'bing') fixBingImgCapLayout();
             if (currentSite === 'google') markGoogleTwoLine();
           }
@@ -4429,7 +4428,7 @@ body[baidu] #foot a:hover {
 
     // 从 Google 结果项出发
     const gList = document.querySelectorAll(
-      '.g:not([two-checked*="8"]), .cUnQKe:not([two-checked*="8"]), .Ww4FFb:not([two-checked*="8"])'
+      '.g:not([two-checked*="8"]), .cUnQKe:not([two-checked*="8"]), .Ww4FFb:not([two-checked*="8"]), .MjjYud:not([two-checked*="8"])'
     );
     [...gList].filter(one => MarkMine(one));
   }
