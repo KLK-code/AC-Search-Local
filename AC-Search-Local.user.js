@@ -5,7 +5,7 @@
 // @description  本地化搜索引擎优化：去重定向、去广告、Favicon、双列/多列布局、暗黑模式、自动翻页、域名拦截
 // @author       AC (Local Fork)
 // @license      GPL-3.0-only
-// @version      1.0.23
+// @version      1.0.25
 // @run-at       document-start
 // @namespace    ac-search-local
 // @grant        GM_getValue
@@ -4176,21 +4176,16 @@ body[baidu] #foot a:hover {
           sep.style.cssText = 'margin:0;padding:0;height:0;';
           sep.innerHTML = '';
 
-          const pageWrap = document.createElement('div');
-          pageWrap.style.cssText = 'width:100% !important;grid-column:1/-1;box-sizing:border-box;';
-
           if (insertMode === 1) {
             targetEl.parentNode?.insertBefore(sep, targetEl);
-            pageItems.forEach(item => pageWrap.appendChild(item));
-            targetEl.parentNode?.insertBefore(pageWrap, targetEl);
+            pageItems.forEach(item => targetEl.parentNode?.insertBefore(item, targetEl));
           } else {
             targetEl.appendChild(sep);
             pageItems.forEach((item, i) => {
               item.classList.add('ac-entry-ani');
               item.style.animationDelay = (i * 0.04) + 's';
-              pageWrap.appendChild(item);
+              targetEl.appendChild(item);
             });
-            targetEl.appendChild(pageWrap);
             if (currentSite === 'bing') fixBingImgCapLayout();
           }
 
