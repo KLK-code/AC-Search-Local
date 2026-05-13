@@ -1299,8 +1299,8 @@ body[baidu].pc-fresh-wrapper-con #container.sam_newgrid #content_left {
   position: relative;
   padding-left: 2%;
   float: unset;
-  width: 85vw !important;
-  max-width: 1300px !important;
+  width: 80vw !important;
+  max-width: 1200px !important;
   margin-bottom: 30px;
 }
 body[news] #wrapper #content_left > div:not([class]):not([id]) {
