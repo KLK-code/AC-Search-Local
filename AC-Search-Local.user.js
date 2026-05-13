@@ -5,7 +5,7 @@
 // @description  本地化搜索引擎优化：去重定向、去广告、Favicon、双列/多列布局、暗黑模式、自动翻页、域名拦截
 // @author       AC (Local Fork)
 // @license      GPL-3.0-only
-// @version      1.0.33
+// @version      1.0.34
 // @run-at       document-start
 // @namespace    ac-search-local
 // @grant        GM_getValue
@@ -1293,14 +1293,14 @@ body[baidu].pc-fresh-wrapper-con #container.sam_newgrid #content_left {
 #container.sam_newgrid #content_left {
   display: grid;
   grid-template-columns: repeat(2, 46%) !important;
-  grid-gap: 0 32px !important;
+  grid-gap: 0 20px !important;
   grid-template-areas: "xmain xmain";
   margin: 0 auto;
   position: relative;
   padding-left: 2%;
   float: unset;
   width: 85vw !important;
-  max-width: 1300px !important;
+  max-width: 1350px !important;
   margin-bottom: 30px;
 }
 body[news] #wrapper #content_left > div:not([class]):not([id]) {
@@ -1990,6 +1990,11 @@ body[google] .rZj61 {
 
   // 谷歌双列
   const CSS_googleTwoPage = `/**Store GoogleTwoPageStyle**/
+/* 锁定 #rso 为 flex column — 阻止 Google 翻页后自动转为 grid 破坏已有布局 */
+#rso {
+  display: flex !important;
+  flex-direction: column !important;
+}
 div[two-father] {
   position: relative;
   float: unset;
