@@ -5,7 +5,7 @@
 // @description  本地化搜索引擎优化：去重定向、去广告、Favicon、双列/多列布局、暗黑模式、自动翻页、域名拦截
 // @author       AC (Local Fork)
 // @license      GPL-3.0-only
-// @version      1.0.36
+// @version      1.0.37
 // @run-at       document-start
 // @namespace    ac-search-local
 // @grant        GM_getValue
@@ -1300,7 +1300,7 @@ body[baidu].pc-fresh-wrapper-con #container.sam_newgrid #content_left {
   padding-left: 2%;
   float: unset;
   width: 85vw !important;
-  max-width: 1350px !important;
+  max-width: 1450px !important;
   margin-bottom: 30px;
 }
 body[news] #wrapper #content_left > div:not([class]):not([id]) {
@@ -4348,6 +4348,12 @@ body[baidu] #foot a:hover {
         loadNextPage();
       }
     }, 200));
+
+    // 内容高度不够无法触发滚动 → 直接加载下一页
+    setTimeout(() => {
+      if (!config.isAutopage || isPageLoading) return;
+      if (Math.max(document.documentElement.scrollHeight, document.body.scrollHeight) <= window.innerHeight) loadNextPage();
+    }, 500);
   }
 
   // ===================== Google 双列标记 =====================
