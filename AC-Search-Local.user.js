@@ -1292,15 +1292,15 @@ body[baidu].pc-fresh-wrapper-con #container.sam_newgrid #content_left {
 #wrapper #content_left,
 #container.sam_newgrid #content_left {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  grid-gap: 0 28px;
+  grid-template-columns: repeat(2, 46%);
+  grid-gap: 0 40px;
   grid-template-areas: "xmain xmain";
   margin: 0 auto;
   position: relative;
   padding-left: 2%;
   float: unset;
-  width: 80vw !important;
-  max-width: 1200px !important;
+  width: 85vw !important;
+  max-width: 1300px !important;
   margin-bottom: 30px;
 }
 body[news] #wrapper #content_left > div:not([class]):not([id]) {
