@@ -4193,15 +4193,24 @@ body[baidu] #foot a:hover {
             pageItems.forEach(item => targetEl.parentNode?.insertBefore(item, targetEl));
           } else {
             targetEl.appendChild(sep);
-            // 翻页条目放入独立 grid 容器，双列排列，不影响已有元素
-            const pageGrid = document.createElement('div');
-            pageGrid.style.cssText = 'display:grid !important;grid-template-columns:repeat(2,1fr);gap:16px;grid-column:1/-1;width:100%!important;';
-            pageItems.forEach((item, i) => {
-              item.classList.add('ac-entry-ani');
-              item.style.animationDelay = (i * 0.04) + 's';
-              pageGrid.appendChild(item);
-            });
-            targetEl.appendChild(pageGrid);
+            if (currentSite === 'google' && +config.adsStyleMode >= 3) {
+              // 多列模式：翻页条目放入独立 grid 容器，不影响已有元素的网格排列
+              const pageGrid = document.createElement('div');
+              pageGrid.style.cssText = 'display:grid !important;grid-template-columns:repeat(2,1fr);gap:16px;grid-column:1/-1;width:100%!important;';
+              pageItems.forEach((item, i) => {
+                item.classList.add('ac-entry-ani');
+                item.style.animationDelay = (i * 0.04) + 's';
+                pageGrid.appendChild(item);
+              });
+              targetEl.appendChild(pageGrid);
+            } else {
+              // 单列或其他引擎：直接追加，不改变已有排列
+              pageItems.forEach((item, i) => {
+                item.classList.add('ac-entry-ani');
+                item.style.animationDelay = (i * 0.04) + 's';
+                targetEl.appendChild(item);
+              });
+            }
             if (currentSite === 'bing') fixBingImgCapLayout();
             if (currentSite === 'google') markGoogleTwoLine();
           }
