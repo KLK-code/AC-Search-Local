@@ -1275,8 +1275,8 @@ body[baidu].pc-fresh-wrapper-con #container.sam_newgrid #content_left {
 #wrapper #content_left,
 #container.sam_newgrid #content_left {
   display: grid;
-  grid-template-columns: repeat(2, 48%);
-  grid-gap: 0 20px;
+  grid-template-columns: repeat(2, 44%);
+  grid-gap: 0 30px;
   grid-template-areas: "xmain xmain";
   margin: 0 auto;
   position: relative;
@@ -1329,6 +1329,12 @@ body[news] #wrapper #content_left > div:not([class]):not([id]) {
   margin-bottom: 10px !important;
   padding-top: 10px;
   background-color: #f8f8f8;
+}
+/* 百度新版卡片边框容器收窄，防溢出 */
+._content-border_1q9is_4 {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
 }
 .c-container h3 a {
   z-index: 1;
