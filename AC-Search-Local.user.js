@@ -5,7 +5,7 @@
 // @description  本地化搜索引擎优化：去重定向、去广告、Favicon、双列/多列布局、暗黑模式、自动翻页、域名拦截
 // @author       AC (Local Fork)
 // @license      GPL-3.0-only
-// @version      1.0.34
+// @version      1.0.35
 // @run-at       document-start
 // @namespace    ac-search-local
 // @grant        GM_getValue
@@ -4204,6 +4204,7 @@ body[baidu] #foot a:hover {
               targetEl.appendChild(item);
             });
             if (currentSite === 'bing') fixBingImgCapLayout();
+            if (currentSite === 'google') markGoogleTwoLine();
           }
 
           // 替换翻页元素（只替换第一个匹配，不要求长度相等）
