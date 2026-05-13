@@ -5,7 +5,7 @@
 // @description  本地化搜索引擎优化：去重定向、去广告、Favicon、双列/多列布局、暗黑模式、自动翻页、域名拦截
 // @author       AC (Local Fork)
 // @license      GPL-3.0-only
-// @version      1.0.41
+// @version      1.0.48
 // @run-at       document-start
 // @namespace    ac-search-local
 // @grant        GM_getValue
@@ -4111,6 +4111,158 @@ body[baidu] #foot a:hover {
     }
   }
 
+  // ===================== 自动翻页 =====================
+  let pageNum = 1;
+  let pageUrl = '';
+  let isPageLoading = false;
+
+  function getFullHref(el) {
+    if (!el) return '';
+    if (typeof el === 'string') return el;
+    try { return new URL(el.getAttribute('href') || el.href || '', location.href).href; } catch (e) { return ''; }
+  }
+
+  // Pager分隔符图标 (base64)
+  const PAGER_ICONS = {
+    top: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAWCAYAAADEtGw7AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAWtJREFUeNrclE0rRGEUx8c1GUpRJIVIZGdhZCVr38GGhaI0ZXwCkiglShZEcvJxhdgYWOjLEUpmEyiLzze+o8dTzdO3PljoVTv7rPc85d+6555xYrEhWop6boda5+6l9wjWcWpF+WIbqCJJ9hFRcDr3QAIkIhKugz5PDfkSixkphz5aiAnqgE8rgWRxGoSOPyBkswQuUwyscw4HrmFCZL8KtJAg7mEFPEmo4FdPwk0BUcsdzIap0TQ8qMAPuICcEjLnd+VjSjcfJNgIcDkZGSymYGsnK9EZMrxe4MFaNGiZjC2fT5zQ3p7QDK1dR2GSljziclAvRUe8nHYVA4jjvC43NfAuksmB2QNqcsWxKcLbAKTFnS0hWD6n27Fd6FLqiDI5iQmQ9jpiVT0sNJ6aYd7dAE3QHBbinSAX5JWWaxuLo8F35jhbBK9Y+rCl6pLcnna8NvuDGMnslpbZRpXZYT3r4EGACZL3ZL2afNFAAAAABJRU5ErkJggg==',
+  };
+
+  async function loadNextPage() {
+    if (!config.isAutopage || !siteCfg || !siteCfg.pager) return;
+
+    // DOM 查找下一页链接
+    let el = null;
+    if (siteCfg.pager.nextLinkFn) el = siteCfg.pager.nextLinkFn();
+    if (!el && siteCfg.pager.nextLink) {
+      const sel = siteCfg.pager.nextLink;
+      try { el = document.querySelector(sel); } catch (e) {}
+      if (!el) el = $.xpath(sel);
+    }
+    if (!el) return;
+    const url = getFullHref(el);
+    if (!url || url === pageUrl) return;
+    pageUrl = url;
+    isPageLoading = true;
+
+    // 加载指示器
+    const loader = document.createElement('div');
+    loader.id = 'ac-pager-loader';
+    loader.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);padding:8px 16px;background:rgba(0,0,0,0.7);color:white;border-radius:20px;font-size:12px;z-index:99999;';
+    loader.textContent = 'Loading...';
+    document.body.appendChild(loader);
+
+    GM.xhr({
+      url,
+      method: 'GET',
+      timeout: 5000,
+      onload: function (resp) {
+        try {
+          loader.remove();
+          if (!resp.responseText) { isPageLoading = false; return; }
+
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(resp.responseText, 'text/html');
+
+          let pageItems = $.getAll(siteCfg.pager.pageElement, doc);
+          // XPath 选择器在 DOMParser doc 里可能失效，转 CSS 重试
+          if (!pageItems.length) {
+            const cssSel = siteCfg.pager.pageElement.replace(/id\(["']([^"']+)["']\)/g, '#$1');
+            try { pageItems = [...doc.querySelectorAll(cssSel)]; } catch (e) { /* ignore */ }
+          }
+          if (!pageItems.length) { isPageLoading = false; return; }
+
+          const [insertTo, insertMode = 2] = siteCfg.pager.insertTo || [];
+          let targetEl;
+          if (insertTo) {
+            targetEl = $.getAll(insertTo, document)[0];
+          }
+          if (!targetEl) {
+            const curItems = $.getAll(siteCfg.pager.pageElement, document);
+            targetEl = curItems[curItems.length - 1]?.parentNode;
+          }
+          if (!targetEl) { isPageLoading = false; return; }
+
+          pageNum++;
+          const sep = document.createElement('div');
+          sep.className = 'ac-sp-separator';
+          sep.style.cssText = 'margin:0;padding:0;height:0;';
+          sep.innerHTML = '';
+
+          if (insertMode === 1) {
+            targetEl.parentNode?.insertBefore(sep, targetEl);
+            pageItems.forEach(item => targetEl.parentNode?.insertBefore(item, targetEl));
+          } else {
+            targetEl.appendChild(sep);
+            if (currentSite === 'google' && +config.adsStyleMode >= 3) {
+              // 多列模式：翻页条目放入独立 grid 容器，不影响已有元素的网格排列
+              const pageGrid = document.createElement('div');
+              pageGrid.style.cssText = 'display:grid !important;grid-template-columns:repeat(2,1fr);gap:16px;grid-column:1/-1;width:100%!important;';
+              pageItems.forEach((item, i) => {
+                item.classList.add('ac-entry-ani');
+                item.style.animationDelay = (i * 0.04) + 's';
+                pageGrid.appendChild(item);
+              });
+              targetEl.appendChild(pageGrid);
+            } else {
+              // 单列或其他引擎：直接追加，不改变已有排列
+              pageItems.forEach((item, i) => {
+                item.classList.add('ac-entry-ani');
+                item.style.animationDelay = (i * 0.04) + 's';
+                targetEl.appendChild(item);
+              });
+            }
+            if (currentSite === 'bing') fixBingImgCapLayout();
+            if (currentSite === 'google') markGoogleTwoLine();
+          }
+
+          // 替换翻页元素（只替换第一个匹配，不要求长度相等）
+          if (siteCfg.pager.replaceE) {
+            try {
+              const repEl = $.getAll(siteCfg.pager.replaceE, doc);
+              const oriEl = $.getAll(siteCfg.pager.replaceE, document);
+              if (repEl.length && oriEl.length) {
+                oriEl[0].outerHTML = repEl[0].outerHTML;
+              }
+            } catch (e) { /* ignore */ }
+          } else {
+            // replaceE 为 null 时，手动更新翻页链接（Bing/Google 依赖此逻辑推进页码）
+            try {
+              const oldEl = siteCfg.pager.nextLinkFn ? siteCfg.pager.nextLinkFn() : null;
+              if (oldEl) {
+                let newEl = null;
+                if (currentSite === 'bing') newEl = doc.querySelector('a.sb_pagN');
+                else if (currentSite === 'google') newEl = doc.getElementById('pnnext');
+                if (newEl) {
+                  const nextUrl = getFullHref(newEl);
+                  if (nextUrl && nextUrl !== url) oldEl.href = nextUrl;
+                } else {
+                  oldEl.remove();
+                }
+              }
+            } catch (e) { /* ignore */ }
+          }
+
+          if (siteCfg.pager.stylish) {
+            injectStyle('pager-css', siteCfg.pager.stylish);
+          }
+        } catch (e) {
+          /* ignore */
+        }
+        isPageLoading = false;
+      },
+      ontimeout: function () {
+        loader.remove();
+        isPageLoading = false;
+        pageUrl = '';
+      },
+      onerror: function () {
+        loader.remove();
+        isPageLoading = false;
+        pageUrl = '';
+      },
+    });
+  }
+
   function fixBingImgCapLayout() {
     if (currentSite !== 'bing') return;
     // 转换 rms_iac → img
@@ -4182,17 +4334,26 @@ body[baidu] #foot a:hover {
   }
 
   function bindPagerScroll() {
-    if (!config.isAutopage || !siteCfg || !siteCfg.pager) return;
+    let lastScroll = window.scrollY || document.documentElement.scrollTop;
+    window.addEventListener('scroll', $.throttle(function () {
+      const st = window.scrollY || document.documentElement.scrollTop;
+      const delta = st - lastScroll;
+      lastScroll = st;
+      if (delta <= 0) return; // 只在下滑时触发
+      if (!config.isAutopage || isPageLoading) return;
 
-    const btn = document.createElement('button');
-    btn.id = 'ac-nextpage-btn';
-    btn.textContent = '下一页 \u25BC';
-    btn.style.cssText = 'position:fixed;bottom:40px;right:80px;z-index:99999;padding:10px 18px;background:#4e6ef2;color:#fff;border:none;border-radius:20px;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.3);font-size:14px;';
-    btn.addEventListener('click', () => {
-      const el = siteCfg.pager.nextLinkFn ? siteCfg.pager.nextLinkFn() : null;
-      if (el) { el.click(); btn.remove(); }
-    });
-    document.body.appendChild(btn);
+      const scrollDelta = 888;
+      const docH = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
+      if (docH <= window.innerHeight + st + scrollDelta) {
+        loadNextPage();
+      }
+    }, 200));
+
+    // 内容高度不够无法触发滚动 → 直接加载下一页
+    setTimeout(() => {
+      if (!config.isAutopage || isPageLoading) return;
+      if (Math.max(document.documentElement.scrollHeight, document.body.scrollHeight) <= window.innerHeight) loadNextPage();
+    }, 500);
   }
 
   // ===================== Google 双列标记 =====================
