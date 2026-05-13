@@ -5,7 +5,7 @@
 // @description  本地化搜索引擎优化：去重定向、去广告、Favicon、双列/多列布局、暗黑模式、自动翻页、域名拦截
 // @author       AC (Local Fork)
 // @license      GPL-3.0-only
-// @version      1.0.26
+// @version      1.0.27
 // @run-at       document-start
 // @namespace    ac-search-local
 // @grant        GM_getValue
@@ -3351,7 +3351,7 @@ body[baidu] #foot a:hover {
     const w = '70vw';
     switch (site) {
       case 'baidu':
-        return '#wrapper_wrapper #container,#wrapper #container{width:70vw !important;margin:0 auto !important}' +
+        return '#wrapper_wrapper #container,#wrapper #container{width:60vw !important;margin:0 auto !important}' +
           '#wrapper #content_left{width:100% !important;max-width:unset !important;min-width:unset !important;float:none !important;display:block !important}' +
           '.result.c-container,#content_left>.c-container,#content_left>.result{width:100% !important;max-width:unset !important;min-width:unset !important;margin-left:0 !important;margin-right:0 !important}' +
           '#wrapper .head_nums_cont_outer,.hint_common_restop,#header_top_bar{position:relative !important;left:10% !important;width:80% !important}' +
