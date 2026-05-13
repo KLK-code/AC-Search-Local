@@ -5,7 +5,7 @@
 // @description  本地化搜索引擎优化：去重定向、去广告、Favicon、双列/多列布局、暗黑模式、自动翻页、域名拦截
 // @author       AC (Local Fork)
 // @license      GPL-3.0-only
-// @version      1.0.52
+// @version      1.0.53
 // @run-at       document-start
 // @namespace    ac-search-local
 // @grant        GM_getValue
@@ -1328,9 +1328,13 @@ body[news] #wrapper #content_left > div:not([class]):not([id]) {
 #wrapper #content_left .result,
 #wrapper #content_left .result-op,
 #wrapper #content_left div[class*='vmp-project'],
-#wrapper #content_left > .c-container {
+#wrapper #content_left > .c-container,
+#container.sam_newgrid #content_left .result,
+#container.sam_newgrid #content_left .result-op,
+#container.sam_newgrid #content_left > .c-container {
   width: 100% !important;
   max-width: unset;
+  min-width: 0 !important;
   margin-left: 0;
   margin-right: 0;
 }
@@ -3326,6 +3330,7 @@ body[baidu] #foot a:hover {
     }
     .ULSxyf:empty, .s6JM6d:empty { display: none !important; }
     .focusSentinel { display: none !important; position: absolute !important; height: 0 !important; width: 0 !important; overflow: hidden !important; grid-column: unset !important; grid-row: unset !important; }
+    span[id^="fld_"] { display: none !important; position: absolute !important; width: 0 !important; height: 0 !important; overflow: hidden !important; }
   `;
 
   function multiColGridCSS(site, cols) {
@@ -4573,6 +4578,7 @@ body[baidu] #foot a:hover {
       handleMobileBaidu();
       if (currentSite === 'google') removeGoogleMouseDown();
       if (currentSite === 'google') document.querySelectorAll('.focusSentinel').forEach(el => { el.style.display = 'none'; });
+      if (currentSite === 'google') document.querySelectorAll('span[id^="fld_"]').forEach(el => { el.style.setProperty('display', 'none', 'important'); });
 
       // 去广告
       if (config.isAdsEnable) {
