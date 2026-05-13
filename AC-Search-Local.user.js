@@ -5,7 +5,7 @@
 // @description  本地化搜索引擎优化：去重定向、去广告、Favicon、双列/多列布局、暗黑模式、自动翻页、域名拦截
 // @author       AC (Local Fork)
 // @license      GPL-3.0-only
-// @version      1.0.53
+// @version      1.0.54
 // @run-at       document-start
 // @namespace    ac-search-local
 // @grant        GM_getValue
@@ -1235,9 +1235,11 @@ body[baidu] #chat-input-main {
 
   // 百度双列
   const CSS_baiduTwoPage = `/**Store BaiduTowPageStyle**/
-#wrapper_wrapper #container {
+#wrapper_wrapper, #wrapper_wrapper #container {
   width: auto;
+  max-width: 100vw;
   margin-left: unset;
+  overflow-x: hidden;
 }
 form.fm {
   position: relative;
