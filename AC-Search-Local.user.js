@@ -1270,7 +1270,7 @@ form.fm {
 }
 #container.sam_newgrid #content_left,
 body[baidu].pc-fresh-wrapper-con #container.sam_newgrid #content_left {
-  width: 85%;
+  width: 80%;
 }
 .pc-fresh-wrapper .wrapper_new #s_tab .s_tab_inner.s-old-tag,
 .pc-fresh-wrapper .wrapper_new.wrapper_s #s_tab .s_tab_inner.s-old-tag,
@@ -1287,8 +1287,8 @@ body[baidu].pc-fresh-wrapper-con #container.sam_newgrid #content_left {
   position: relative;
   padding-left: 2%;
   float: unset;
-  width: 90%;
-  max-width: 1400px;
+  width: 85%;
+  max-width: 1300px;
   margin-bottom: 30px;
 }
 body[news] #wrapper #content_left > div:not([class]):not([id]) {
