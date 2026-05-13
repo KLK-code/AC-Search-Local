@@ -2092,13 +2092,14 @@ g-section-with-header {
 body[google] .rZj61 {
   margin-left: 40%;
 }
-/* 修复 Google 特殊结果容器（图片卡片/知识面板）被双列宽度限制挤压到 41px */
-#rso .z4oRIf,
-#rso #eRsUse {
+/* 修复 Google 本地知识面板（A6K0A.z4oRIf）被双列宽度限制挤压到 41px */
+.A6K0A.z4oRIf {
   width: 100% !important;
+  min-width: unset !important;
   max-width: unset !important;
   margin-left: 0 !important;
   margin-right: 0 !important;
+  box-sizing: border-box !important;
 }
 `;
 
@@ -3243,7 +3244,7 @@ body[baidu] #foot a:hover {
         css += '\n' + '#main #cnt,#cnt #center_col,#cnt #foot{margin:0 auto !important;transform:translateX(-2.5%);}' +
           '#rso{display:flex!important;flex-direction:column!important;align-items:stretch!important;}' +
           '#rso>*{width:100%!important;max-width:100%!important;}' +
-          '.A6K0A,div[two-child],.Wm5I1e,.vt6azd{margin-left:0!important;margin-right:0!important;max-width:unset!important;}';
+          '.A6K0A,div[two-child],.Wm5I1e,.vt6azd,.A6K0A.z4oRIf{margin-left:0!important;margin-right:0!important;max-width:unset!important;}';
       }
     } else if (m === 3) {
       // 双列
@@ -3363,7 +3364,7 @@ body[baidu] #foot a:hover {
       case 'google':
         return '#main #cnt,#cnt #center_col,#cnt #foot{width:' + w + ' !important;max-width:1200px !important;margin:0 auto !important}' +
           '#rso{max-width:unset !important}' +
-          '.A6K0A,.vt6azd,div[two-child]{margin-left:auto !important;margin-right:auto !important}';
+          '.A6K0A,.vt6azd,div[two-child],.A6K0A.z4oRIf{margin-left:auto !important;margin-right:auto !important}';
       case 'bing':
         return '#b_content #b_results{width:' + w + ' !important;max-width:1200px !important}' +
           '#b_content #b_pole{width:' + w + ' !important;max-width:1200px !important;margin:0 auto !important}';
