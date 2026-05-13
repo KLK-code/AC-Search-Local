@@ -5,7 +5,7 @@
 // @description  本地化搜索引擎优化：去重定向、去广告、Favicon、双列/多列布局、暗黑模式、自动翻页、域名拦截
 // @author       AC (Local Fork)
 // @license      GPL-3.0-only
-// @version      1.0.51
+// @version      1.0.0
 // @run-at       document-start
 // @namespace    ac-search-local
 // @grant        GM_getValue
@@ -26,13 +26,19 @@
 // @include      *://ipv6.baidu.com/*
 // @include      *://www.baidu.com/*
 // @include      *://www1.baidu.com/*
+// @include      *://m.baidu.com/*
 // @include      *://xueshu.baidu.com/*
+// @include      *://www.so.com/*
 // @include      *://*.bing.com/*
 // @include      *://encrypted.google.*/search*
 // @include      *://*.google.*/search*
+// @include      *://scholar.google.*/*
 // @include      *://*.google.*/webhp*
 // @include      *://duckduckgo.com/*
+// @include      *://*.dogedoge.com/*
+// @include      *://*.tujidu.com/*
 // @exclude      *://*.google.*/sorry*
+// @exclude      *://zhidao.baidu.com/*
 // @exclude      *://lens.google.com/*
 // @require      https://registry.npmmirror.com/vue/3.5.26/files/dist/vue.runtime.global.prod.js
 // @noframes
@@ -191,7 +197,7 @@
     hideNode(el) {
       if (el && !el.hasAttribute('ac-hide')) {
         el.setAttribute('ac-hide', '1');
-        el.style.setProperty('display', 'none', 'important');
+        el.style.cssText = 'display:none !important;';
       }
     },
 
@@ -237,7 +243,7 @@
     isCounterEnable: false,
     isALineDisable: false,
     isDarkModeEnable: true,
-    showBackToTop: true,
+    isRightDisplayEnable: true,
     adsStyleMode: 3,
     customStyleEnable: false,
     customStyleLess: '',
@@ -245,9 +251,12 @@
     commonStyleLess: '',
     // 百度
     baidu_doRemoveSug: true,
+    baidu_doRemoveAIGen: false,
     baiduLiteEnable: false,
     // 谷歌
     google_useBaiduLogo: false,
+    // 必应
+    bing_optimizeBing: true,
     // 鸭鸭
     duck_optimizeDuck: true,
   };
@@ -277,8 +286,6 @@
 
   function saveBlocks() {
     GM.setValue(BLOCK_KEY, JSON.stringify(blockList));
-    _blockFilterDone = false;
-    if (siteCfg) document.querySelectorAll(siteCfg.main).forEach(n => delete n.dataset.checked);
   }
 
   // ===================== 站点检测与选择器 =====================
@@ -344,7 +351,7 @@
       pager: {
         nextLink: null,
         nextLinkFn: () => document.getElementById('pnnext'),
-        pageElement: 'css:#rso > .MjjYud',
+        pageElement: 'css:#rso > *',
         insertTo: ['css:#rso', 2],
         replaceE: null,
       },
@@ -552,16 +559,11 @@ form.fm .s_ipt_wr.bg {
 #wrapper #rs,
 #wrapper #content_left .result,
 #wrapper #content_left .result-op,
-#wrapper #content_left div[class*='vmp-project'],
-#wrapper #content_left > .c-container,
-#container.sam_newgrid #content_left .result,
-#container.sam_newgrid #content_left .result-op,
-#container.sam_newgrid #content_left > .c-container {
+#wrapper #content_left > .c-container {
   width: 670px;
   padding: 0 8px 15px 20px;
   margin-top: 0;
   margin-left: 0;
-  margin-right: 0;
   margin-bottom: 30px;
   border-radius: 8px;
   background-color: #fff;
@@ -569,13 +571,12 @@ form.fm .s_ipt_wr.bg {
   border: 1px solid rgba(0, 0, 0, 0.1);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  /* 初始不可见，由 JS 或通用类触发展示 */
 }
 #wrapper #rs.ac-entry-ani,
 #wrapper #content_left .result.ac-entry-ani,
 #wrapper #content_left .result-op.ac-entry-ani,
-#wrapper #content_left > .c-container.ac-entry-ani,
-#container.sam_newgrid #content_left .result.ac-entry-ani,
-#container.sam_newgrid #content_left > .c-container.ac-entry-ani {
+#wrapper #content_left > .c-container.ac-entry-ani {
   animation: ani_topTobuttom 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 #wrapper #rs div[class*='_aladdin'],
@@ -587,11 +588,8 @@ form.fm .s_ipt_wr.bg {
 #wrapper #content_left > .c-container:hover,
 #wrapper #content_left > .result:hover,
 #wrapper #content_left > .result-op:hover,
-#wrapper #content_left > .c-container:hover article,
-#container.sam_newgrid #content_left > .c-container:hover,
-#container.sam_newgrid #content_left > .result:hover,
-#container.sam_newgrid #content_left > .result-op:hover {
-  border: 1px solid rgba(0, 0, 0, 0.12);
+#wrapper #content_left > .c-container:hover article {
+  border: 1px solid rgba(0, 0, 0, 0.1);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
   transform: translateY(-2px);
 }
@@ -604,9 +602,7 @@ form.fm .s_ipt_wr.bg {
 }
 #wrapper #content_left > .result[tpl='soft'] .op-soft-title,
 #wrapper #content_left > .result h3[class*='title'],
-#wrapper #content_left > .c-container h3[class*='title'],
-#container.sam_newgrid #content_left > .result h3[class*='title'],
-#container.sam_newgrid #content_left > .c-container h3[class*='title'] {
+#wrapper #content_left > .c-container h3[class*='title'] {
   background-color: #f8f8f8;
   margin: 0px -8px 10px -20px;
   padding: 8px 20px 5px;
@@ -1276,7 +1272,7 @@ form.fm {
 }
 #container.sam_newgrid #content_left,
 body[baidu].pc-fresh-wrapper-con #container.sam_newgrid #content_left {
-  width: 80vw !important;
+  width: 85%;
 }
 .pc-fresh-wrapper .wrapper_new #s_tab .s_tab_inner.s-old-tag,
 .pc-fresh-wrapper .wrapper_new.wrapper_s #s_tab .s_tab_inner.s-old-tag,
@@ -1284,18 +1280,17 @@ body[baidu].pc-fresh-wrapper-con #container.sam_newgrid #content_left {
   padding: unset;
   margin: 0 auto;
 }
-#wrapper #content_left,
-#container.sam_newgrid #content_left {
+#wrapper #content_left {
   display: grid;
-  grid-template-columns: repeat(2, 46%) !important;
-  grid-gap: 0 20px !important;
+  grid-template-columns: repeat(2, 48%);
+  grid-gap: 0 20px;
   grid-template-areas: "xmain xmain";
   margin: 0 auto;
   position: relative;
   padding-left: 2%;
   float: unset;
-  width: 85vw !important;
-  max-width: 1450px !important;
+  width: 90%;
+  max-width: 1400px;
   margin-bottom: 30px;
 }
 body[news] #wrapper #content_left > div:not([class]):not([id]) {
@@ -1448,6 +1443,7 @@ div.res_top_banner,
 #rso .hit_top_new,
 #rso #fld,
 #rso div.rrecom-btn-parent,
+#content_right,
 #center_col > #taw,
 #fld,
 #demo {
@@ -1715,7 +1711,7 @@ div[two-child],
   max-width: unset;
 }
 #main #rcnt #rhs {
-  display: none !important;
+  display: none;
 }
 .showRight #main #rcnt #rhs {
   display: unset;
@@ -2019,7 +2015,7 @@ div[two-child]:last-child:nth-child(odd) {
   display: none;
 }
 #main #rcnt #rhs {
-  display: none !important;
+  display: none;
 }
 #main #rcnt {
   display: grid;
@@ -2098,15 +2094,6 @@ g-section-with-header {
 }
 body[google] .rZj61 {
   margin-left: 40%;
-}
-/* 修复 Google 本地知识面板（A6K0A.z4oRIf）被双列宽度限制挤压到 41px */
-.A6K0A.z4oRIf {
-  width: 100% !important;
-  min-width: unset !important;
-  max-width: unset !important;
-  margin-left: 0 !important;
-  margin-right: 0 !important;
-  box-sizing: border-box !important;
 }
 `;
 
@@ -2354,50 +2341,11 @@ body #b_content {
 #b_content #b_results > li:not(#mfa_root) {
   width: 98%;
 }
-/* 修复翻页栏显示（单列居中模式） */
-.b_pag {
-  width: 73vw;
-  max-width: 1000px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-wrap: wrap;
-  padding: 8px 0;
-  box-sizing: border-box;
-}
-.b_pag a.sb_pagP,
-.b_pag a.sb_pagN {
-  display: inline-flex !important;
-  align-items: center;
-  padding: 6px 12px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  color: #4f91de;
-  text-decoration: none;
-  white-space: nowrap;
-}
-/* 修复 Bing 图文混合卡片（如百科缩略图）Flex 布局 — 对抗 CSS_bingCommon 的 overflow:hidden 副作用 */
-#b_results .b_imgcap_altitle {
-  display: flex !important;
-  align-items: center !important;
-}
-#b_results .b_imgcap_altitle .b_imgcap_img {
-  flex-shrink: 0 !important;
-  margin-right: 16px !important;
-  width: auto !important;
-}
-#b_results .b_imgcap_altitle .b_imgcap_main h2 {
-  margin: 0 !important;
-  padding: 0 !important;
-}
-/* 移除 BFC 压制：+ #b_content 前缀提升 specificity → (0,3,1,1) 击败 CSS_bingCommon 的 (0,3,0,1) */
-#b_content #b_results > li:not(#mfa_root):has(.b_imgcap_altitle) {
-  overflow: visible;
-}
 `;
 
   // 必应双列
   const CSS_bingTwoPage = `/*Store BingTwoPageStyle*/
+#container #content_left .hit_top_new,
 #b_content aside,
 #b_results #mfa_root,
 #b_results #adstop_gradiant_separator,
@@ -2409,6 +2357,9 @@ body #b_content {
   grid-template-columns: repeat(2, 50%);
   grid-template-areas: "xmain xmain";
   display: grid;
+}
+ > * #b_content #b_results:only-child {
+  grid-column: 1 / -1;
 }
 .carousel .items {
   max-width: 72vw;
@@ -2447,16 +2398,6 @@ body #b_header {
   width: 72vw;
   text-align: center;
   margin: 0 auto;
-}
-/* 修复翻页按钮可见性（双列模式） */
-.b_pag a.sb_pagP,
-.b_pag a.sb_pagN {
-  display: inline-flex !important;
-  align-items: center;
-  padding: 6px 12px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  color: #4f91de;
 }
 `;
 
@@ -3017,7 +2958,217 @@ body {
 }
 `;
 
+  // 护眼样式
+  const CSS_HuYan = `/**Store HuYanStyle**/
+/*****Baidu-HuYanStyle*****/
+body[baidu],
+#wrapper #head,
+#wrapper #s_tab,
+form.fm .s_ipt_wr.bg {
+  background-color: #ffffff;
+}
+#wrapper #content_left .result-op,
+#wrapper #content_left .result,
+#wrapper #content_left article,
+#wrapper #content_left > .c-container,
+#wrapper #rs,
+#wrapper #content_right {
+  background-color: #aaaaaa;
+  border: 1px double #a2d7d4;
+  border-radius: 0px;
+}
+#wrapper #content_left .result-op:hover,
+#wrapper #content_left .result:hover,
+#wrapper #content_left .result-op:hover article {
+  background-color: #cccccc !important;
+}
+#wrapper #content_left .result h3[class~="c-title"],
+#wrapper #content_left .result-op h3[class~="c-title"],
+#wrapper #content_left .c-container h3[class~="c-title"],
+#wrapper #rs .tt {
+  background-color: #bbbbbb;
+}
+/***Bing-HuYanStyle****/
+.na_cnt .nws_itm,
+.nws_itmb,
+#b_content #b_results > li:not(#mfa_root),
+body #b_header {
+  background-color: #aaaaaa;
+  border: 1px double #a2d7d4;
+  border-radius: 0px;
+}
+#b_content #b_results li:hover {
+  background-color: #cccccc !important;
+}
+#b_content #b_results li h2 {
+  background-color: #bbbbbb;
+}
+/***Google-HuYanStyle****/
+body[google] {
+  background-color: #fdfdfd;
+}
+div[two-father] div[two-child] {
+  background-color: #aaaaaa;
+  border: 1px solid #9cd2cfaa;
+}
+div[two-father] div[two-child] .IiOSLb .rsGxI.Ww4FFb,
+div[two-father] div[two-child] .Ww4FFb {
+  background-color: #aaaaaa !important;
+}
+div[two-father] div[two-child]:hover {
+  background-color: #cccccc !important;
+  border: 1px double #9cd2cf;
+}
+div[two-father] div[two-child] div.r,
+div[two-father] div[two-child] h3 {
+  background-color: #bbbbbb;
+}
+/***Sogou-HuYanStyle****/
+body[sogou],
+#pagebar_container a {
+  background-color: #fdfdfd;
+}
+#main .results > div {
+  background-color: #aaaaaa;
+  border: 1px solid #9cd2cfaa;
+  border-radius: 0px;
+}
+#main .results > div:hover {
+  background-color: #cccccc !important;
+  border: 1px double #9cd2cf;
+}
+#main .results > div h3 {
+  background-color: #bbbbbb;
+}
+/***Doge-HuYanStyle****/
+body[duck],
+body[doge] {
+  background-color: #fdfdfd;
+}
+#links_wrapper #links .results_links_deep {
+  background-color: #aaaaaa;
+  border: 1px solid #9cd2cfaa;
+  border-radius: 0px;
+}
+#links_wrapper #links .results_links_deep:hover {
+  background-color: #cccccc !important;
+  border: 1px double #9cd2cf;
+}
+#links_wrapper #links .results_links_deep h2 {
+  background-color: #bbbbbb;
+}
+/***Duck-HuYanStyle****/
+#react-layout li {
+  background-color: #aaaaaa;
+  border: 1px solid #9cd2cfaa;
+  border-radius: 0px;
+}
+#react-layout li:hover {
+  background-color: #cccccc !important;
+  border: 1px double #9cd2cf;
+}
+`;
 
+  // 背景自适应
+  const CSS_BgAutoFit = `/**Store Bg AutoFit**/
+/*****Baidu-AutoFit*****/
+body[baidu] #wrapper .result-molecule.new-pmd[tpl="app/head-tab"] {
+  width: 100% !important;
+}
+body[baidu] #wrapper .result-molecule.new-pmd[tpl="app/head-tab"] #s_tab {
+  background-color: transparent;
+  padding-top: 66px;
+}
+body[baidu] #wrapper .result-molecule.new-pmd[tpl="app/head-tab"] #s_tab a:before {
+  color: inherit;
+}
+body[baidu] #wrapper #content_left .result,
+body[baidu] #wrapper #content_left .result-op {
+  background-color: rgba(255, 255, 255, 0.6);
+}
+body[baidu] #wrapper #content_left .result h3,
+body[baidu] #wrapper #content_left .result-op h3 {
+  background-color: rgba(248, 248, 248, 0.4);
+}
+body[baidu] #wrapper #content_right {
+  padding: 20px 15px 15px !important;
+  border-radius: 5px;
+  background-color: #FFFFFF66;
+  box-sizing: border-box;
+  box-shadow: 0 0 20px 2px rgba(0, 0, 0, 0.1);
+  -webkit-box-shadow: 0 0 20px 2px rgba(0, 0, 0, 0.1);
+  -moz-box-shadow: 0 0 20px 2px rgba(0, 0, 0, 0.1);
+}
+body[baidu] #wrapper .new-pmd #rs_new {
+  background-color: rgba(255, 255, 255, 0.6);
+}
+body[baidu] #wrapper .result-molecule.new-pmd[tpl="app/page"] #page {
+  background-color: transparent;
+}
+body[baidu] #wrapper .result-molecule.new-pmd[tpl="app/page"] #page a {
+  background-color: rgba(255, 255, 255, 0.6);
+}
+body[baidu] #wrapper .result-molecule.new-pmd #foot {
+  background-color: rgba(255, 255, 255, 0.6);
+}
+/*****Google-AutoFit*****/
+body[google] .sfbg {
+  background-color: rgba(255, 255, 255, 0.6);
+  padding-bottom: 11px;
+}
+body[google] #top_nav .yg51vc {
+  background-color: transparent;
+}
+body[google] #rs,
+body[google] #rso .g {
+  background-color: transparent;
+}
+body[google] .dG2XIf {
+  background-color: rgba(255, 255, 255, 0.6);
+}
+body[google] div[two-father] div[two-child] {
+  background-color: rgba(255, 255, 255, 0.6);
+}
+/*****Bing-AutoFit*****/
+body[bing] #b_content {
+  background: transparent !important;
+}
+body[bing] #b_content #b_results > li:not(#mfa_root) {
+  z-index: 1;
+  background-color: rgba(255, 255, 255, 0.6);
+}
+body[bing] #b_content #b_results > li:not(#mfa_root) .b_title {
+  margin: -12px -20px;
+  padding: 5px 20px;
+  background-color: rgba(255, 255, 255, 0.4);
+}
+body[bing] #b_content #b_results > li:not(#mfa_root) .b_title h2 a {
+  display: inline-block;
+}
+body[bing] #b_content #b_results > li:not(#mfa_root) .b_caption,
+body[bing] #b_content #b_results > li:not(#mfa_root) .mattr {
+  margin-top: 24px;
+}
+/*****Duck-AutoFit*****/
+/*****Doge-AutoFit*****/
+/*****COMMON*****/
+.sp-separator.AC {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+}
+.button.ghhider {
+  background-color: rgba(255, 255, 255, 0.6);
+}
+body[bing] #myuser .myuserconfig,
+body[google] #myuser .myuserconfig {
+  color: #6c6c6c;
+  background: #a8abb622;
+}
+body[bing] #myuser .myuserconfig:hover,
+body[google] #myuser .myuserconfig:hover {
+  color: #6c6c6c;
+  background: #a8abb622 !important;
+}
+`;
 
   // 暗黑模式
   const CSS_DarkMode = `/*** DarkMode Color Val ***/
@@ -3251,7 +3402,7 @@ body[baidu] #foot a:hover {
         css += '\n' + '#main #cnt,#cnt #center_col,#cnt #foot{margin:0 auto !important;transform:translateX(-2.5%);}' +
           '#rso{display:flex!important;flex-direction:column!important;align-items:stretch!important;}' +
           '#rso>*{width:100%!important;max-width:100%!important;}' +
-          '.A6K0A,div[two-child],.Wm5I1e,.vt6azd,.A6K0A.z4oRIf{margin-left:0!important;margin-right:0!important;max-width:unset!important;}';
+          '.A6K0A,div[two-child],.Wm5I1e,.vt6azd{margin-left:0!important;margin-right:0!important;max-width:unset!important;}';
       }
     } else if (m === 3) {
       // 双列
@@ -3358,7 +3509,7 @@ body[baidu] #foot a:hover {
     const w = '70vw';
     switch (site) {
       case 'baidu':
-        return '#wrapper_wrapper #container,#wrapper #container{width:60vw !important;margin:0 auto !important}' +
+        return '#wrapper_wrapper #container,#wrapper #container{width:70vw !important;margin:0 auto !important}' +
           '#wrapper #content_left{width:100% !important;max-width:unset !important;min-width:unset !important;float:none !important;display:block !important}' +
           '.result.c-container,#content_left>.c-container,#content_left>.result{width:100% !important;max-width:unset !important;min-width:unset !important;margin-left:0 !important;margin-right:0 !important}' +
           '#wrapper .head_nums_cont_outer,.hint_common_restop,#header_top_bar{position:relative !important;left:10% !important;width:80% !important}' +
@@ -3371,7 +3522,7 @@ body[baidu] #foot a:hover {
       case 'google':
         return '#main #cnt,#cnt #center_col,#cnt #foot{width:' + w + ' !important;max-width:1200px !important;margin:0 auto !important}' +
           '#rso{max-width:unset !important}' +
-          '.A6K0A,.vt6azd,div[two-child],.A6K0A.z4oRIf{margin-left:auto !important;margin-right:auto !important}';
+          '.A6K0A,.vt6azd,div[two-child]{margin-left:auto !important;margin-right:auto !important}';
       case 'bing':
         return '#b_content #b_results{width:' + w + ' !important;max-width:1200px !important}' +
           '#b_content #b_pole{width:' + w + ' !important;max-width:1200px !important;margin:0 auto !important}';
@@ -3388,15 +3539,6 @@ body[baidu] #foot a:hover {
       case 'doge':
         return '#results{width:' + w + ' !important;max-width:1200px !important;margin:0 auto !important}';
       default: return '';
-    }
-  }
-
-  function updateRightDisplay() {
-    if (!document.body) return;
-    if (+config.adsStyleMode >= 3 || !config.isRightDisplayEnable) {
-      document.body.classList.remove('showRight');
-    } else {
-      document.body.classList.add('showRight');
     }
   }
 
@@ -3484,28 +3626,16 @@ body[baidu] #foot a:hover {
       removeStyle('site-custom');
     }
     fixDuckAlignment();
-    updateRightDisplay();
   }
 
-  // DDG: JS margin 归零 + 宽度内联 !important 兜底（仅改 observer 目标为 documentElement）
-  let _duckObserver = null;
-  let _duckInterval = null;
-
+  // DDG: JS 直设居中和清除偏移（MutationObserver + 轮询双保险）
   function fixDuckAlignment() {
     if (currentSite !== 'duck') return;
     if (+config.adsStyleMode !== 2) return;
 
-    // 清理上次调用残留的 observer 和 interval
-    if (_duckObserver) { _duckObserver.disconnect(); _duckObserver = null; }
-    if (_duckInterval) { clearInterval(_duckInterval); _duckInterval = null; }
-
     function applyFix() {
       const layout = document.getElementById('react-layout');
       if (!layout) return;
-      // 宽度 — 内联 !important 完胜 DDG 后加载 stylesheet
-      layout.style.setProperty('width', '70vw', 'important');
-      layout.style.setProperty('min-width', '600px', 'important');
-      layout.style.setProperty('max-width', '1200px', 'important');
       layout.style.setProperty('margin-left', 'auto', 'important');
       layout.style.setProperty('margin-right', 'auto', 'important');
       // 动态找偏移层（不依赖 class 名）
@@ -3519,19 +3649,15 @@ body[baidu] #foot a:hover {
 
     applyFix();
 
-    // 仅此一处改动: observer 挂 documentElement (备份版本用的是 $.waitEl)
-    _duckObserver = new MutationObserver(() => applyFix());
-    _duckObserver.observe(document.documentElement, {
-      childList: true, subtree: true,
-      attributes: true, attributeFilter: ['style']
+    // MutationObserver 持续监听 React 重渲染
+    const observer = new MutationObserver(() => applyFix());
+    $.waitEl('#react-layout', (layout) => {
+      observer.observe(layout, { childList: true, subtree: false, attributes: true, attributeFilter: ['style'] });
     });
 
-    // 兜底轮询 + observer 10 秒后清理（避免 DDG 页面终身运行）
-    _duckInterval = setInterval(applyFix, 100);
-    setTimeout(() => {
-      if (_duckInterval) { clearInterval(_duckInterval); _duckInterval = null; }
-      if (_duckObserver) { _duckObserver.disconnect(); _duckObserver = null; }
-    }, 10000);
+    // 兜底轮询 3 秒
+    const t = setInterval(applyFix, 100);
+    setTimeout(() => clearInterval(t), 3000);
   }
 
   // ===================== 去广告 =====================
@@ -3553,18 +3679,6 @@ body[baidu] #foot a:hover {
     $.safeRemoveAd('div[aria-label="Ads"]');
   }
 
-  function removeBingAd() {
-    $.safeRemoveAd('.b_ad');
-    $.safeRemoveXpath('id("b_results")/li[./div[@class="ad_fls"]]');
-    // 新版Bing: 通过 ::before 伪元素 content 匹配广告URL标记
-    const checkUrl = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADoAAAALCAYAAAAunZ4gAAAAAXNSR0IArs4c6QAAAl5JREFUSEvlVrtuE0EUPXdW8lqWgA8A8QHJByBBTZDShiiUSMmu3FhRSB9IPgAKd7t2T2SgjAw9rz5AD/kBQLLWtnYOuquZ1cTYMpQGV+ur2fs459wzK/hPfuLnTJJkS0ReBHOfZln2YJVw6HQ6V4uiOAPwLM/zl2Hv1aDtdvu6tfYdyUd6IPjfz/P8ZFWGXTpomqa3RGRAcjvLso/hYDo0ySHJ1wAOAXwHcE/P+cQicsfH4zj+MplMzkheANjRXCTvK4BaB4DmuRbm8cACuAngqzHmtntP634DsK4xkrskj11/teLSNH2utUTknKTWezKXUX0xSZIjEamSkHzsmQyaeK9S1nMANprN5uZ4PM70vIur9J8qCCR7InIx7zzJz5rb1VuL4zh1cnvj45pfRPYUFJKVqnS1ABxoXa3pJarPWleBsNbecO/sLhzUsxiiq0xEUfTBMbqnLDr2e8q+iPSstdU+eOZFZJ/kibXWN75ljDloNBqbRVHcdT5QqyJQzKX8xpiHZVm+8usUEhH6iH9WUJdKd94OesSNMYfW2iGAuhEAPQDbypxffAfQ0BizX5al7nU9qGei2+3+CNVD8q1jbjCbP4qieYOuzRqkk22lqqWDOsft+93zzRhjVBZ9Z1ReQkfGmA1laJF0HdO/MarnSQ5UAVpTmW61Wjuj0eg0UECVn6SXbmWQYY/eBxRMa+2nv5Kul4Yus0hlxtWyBw78U0TW/8SMZnau3q3pdHpFQXOmc0m+Qbw2o/Am8OADOA7707g3IwDnzmMWm9GiK2T26lmVq2a2z/qD4V8f9BciyTQqHtmLjAAAAABJRU5ErkJggg==';
-    const adList = [...document.querySelectorAll('#b_results p')].filter(p => {
-      const url = getComputedStyle(p, '::before').getPropertyValue('content');
-      return url && url.includes(checkUrl);
-    });
-    adList.forEach(p => p.closest('li')?.remove());
-  }
-
   function removeHaosouAd() {
     $.safeRemoveAd('#so_kw-ad');
     $.safeRemoveAd('#m-spread-left');
@@ -3575,7 +3689,6 @@ body[baidu] #foot a:hover {
   const AD_REMOVERS = {
     baidu: removeBaiduAd,
     google: removeGoogleAd,
-    bing: removeBingAd,
     haosou: removeHaosouAd,
   };
 
@@ -3586,9 +3699,7 @@ body[baidu] #foot a:hover {
     // 搜狗百度 - 如果第一个是中文，地址是第二个
     const parts = text.split('-');
     if (parts.length > 1 && /[\u4E00-\u9FFF]+/.test(text) && currentSite === 'baidu') {
-      // 连字符域名保护：跳过含点的 parts（如 www.my-site.com → my-site.com）
-      const domainPart = parts.find(p => /\.\w{2,}$/.test(p.trim()) && !/\s/.test(p));
-      if (domainPart) text = domainPart;
+      text = parts[1];
     }
     const res = /(https?:\/\/)?([^\s/]+)/i.exec(text);
     const host = (res && res[2]) ? res[2].trim() : '';
@@ -3627,8 +3738,7 @@ body[baidu] #foot a:hover {
   async function handleRedirect() {
     if (!config.isRedirectEnable || !siteCfg || !siteCfg.linkSel) return;
 
-    const mainNodes = document.querySelectorAll(siteCfg.main + ':not([ac-redirect])');
-    if (!mainNodes.length) return;
+    const mainNodes = document.querySelectorAll(siteCfg.main);
     const seen = new Set();
 
     for (const curNode of mainNodes) {
@@ -3681,7 +3791,6 @@ body[baidu] #foot a:hover {
                 }
               }
             },
-            ontimeout: function () { /* fire-and-forget: link stays as original redirect */ },
           });
         })(curNode, linkHref));
       }
@@ -3692,11 +3801,10 @@ body[baidu] #foot a:hover {
   function removeGoogleMouseDown() {
     if (currentSite !== 'google') return;
     $.safeFn(() => {
-      document.querySelectorAll('.g .rc a:not([data-fixed]), #rs, #rso .g a:not([data-fixed])').forEach(el => {
+      document.querySelectorAll('.g .rc a, #rs, #rso .g a').forEach(el => {
         el.setAttribute('onmousedown', '');
         el.setAttribute('target', '_blank');
         el.setAttribute('data-jsarwt', '0');
-        el.setAttribute('data-fixed', '1');
       });
     });
   }
@@ -3729,8 +3837,7 @@ body[baidu] #foot a:hover {
   function addFavicons() {
     if (!config.isFaviconEnable || !siteCfg || !siteCfg.faviconSel) return;
 
-    const cites = document.querySelectorAll(siteCfg.faviconSel + ':not([ac-favicon])');
-    if (!cites.length) return;
+    const cites = document.querySelectorAll(siteCfg.faviconSel);
     const batchSize = 10;
     let idx = 0;
     const seenHosts = new Set(); // 去重
@@ -3783,10 +3890,7 @@ body[baidu] #foot a:hover {
 
         if (!target.hasAttribute('data-favicon-t')) {
           target.setAttribute('data-favicon-t', shortHost);
-          // 限制列表大小，避免长时间搜索后内存无限增长
-          if (faviconList.length < 500) {
-            faviconList.push({ tag: target.tagName.toLowerCase(), url: shortHost });
-          }
+          faviconList.push({ tag: target.tagName.toLowerCase(), url: shortHost });
         }
         cite.setAttribute('ac-favicon', '1');
       }
@@ -3799,12 +3903,7 @@ body[baidu] #foot a:hover {
     requestAnimationFrame(processBatch);
   }
 
-  let _faviconCssVersion = -1;
-
   function updateFaviconCSS() {
-    // 列表未变则跳过 CSS 重建
-    if (_faviconCssVersion === faviconList.length) return;
-    _faviconCssVersion = faviconList.length;
     const base = 'h3::before, h2::before {content:"";display:inline-block} [data-favicon-t]::before{width:16px;height:16px;margin-right:4px;background-size:100% 100%;vertical-align:text-top;}';
     const seen = new Set();
     const rules = faviconList.reduce((css, { tag, url }) => {
@@ -3861,8 +3960,7 @@ body[baidu] #foot a:hover {
   function addBlockButtons() {
     if (!config.isBlockEnable || !siteCfg || !siteCfg.blockSel) return;
 
-    const nodes = document.querySelectorAll(siteCfg.main + ':not([bhandle])');
-    if (!nodes.length) return;
+    const nodes = document.querySelectorAll(siteCfg.main);
     nodes.forEach(node => {
       if (node.hasAttribute('bhandle')) return;
       node.classList.add('ac-entry-ani');
@@ -3893,74 +3991,53 @@ body[baidu] #foot a:hover {
     applyBlockFilter();
   }
 
-  // 拦截检查并发锁 + 全量完成标记
+  // 拦截检查并发锁（防止重复执行）
   let isBlockChecking = false;
-  let _blockFilterDone = false;
 
   function applyBlockFilter() {
     if (!siteCfg) return;
     if (isBlockChecking) return;
     isBlockChecking = true;
 
-    const allNodes = [...document.querySelectorAll(siteCfg.main)];
+    const nodes = document.querySelectorAll(siteCfg.main);
     const regList = getBlockRegList();
 
-    // 全量已检查过则跳过
-    if (_blockFilterDone && allNodes.every(n => n.dataset.checked)) {
-      isBlockChecking = false;
-      return;
-    }
+    nodes.forEach(node => {
+      if (node.querySelector('button[ac-user-alter]')) return;
+      // 用 faviconSel 提取真实域名，blockSel 做 fallback
+      const favNode = node.querySelector(siteCfg.faviconSel);
+      const blockNode = node.querySelector(siteCfg.blockSel);
+      const { host, url } = getNodeHost(favNode || blockNode);
+      if (!host || host.length < 3) return;
 
-    let idx = 0;
-    const batchSize = 25;
-    const batch = () => {
-      const end = Math.min(idx + batchSize, allNodes.length);
-      for (; idx < end; idx++) {
-        const node = allNodes[idx];
-        // 已检查过且未手动干预则跳过
-        if (node.dataset.checked && !node.querySelector('button[ac-user-alter]')) continue;
-        if (node.querySelector('button[ac-user-alter]')) continue;
-        const favNode = node.querySelector(siteCfg.faviconSel);
-        const blockNode = node.querySelector(siteCfg.blockSel);
-        const { host, url } = getNodeHost(favNode || blockNode);
-        if (!host || host.length < 3) { node.dataset.checked = '1'; continue; }
+      const isBlocked = regList.some(r => {
+        try { return r.test(host || url); } catch (e) { return r === host; }
+      });
 
-        const isBlocked = regList.some(r => {
-          try { return r.test(host || url); } catch (e) { return r === host; }
-        });
-
-        if (isBlocked) {
-          if (config.isBlockResultDisplay) {
-            node.remove();
-          } else {
-            if (!node.hasAttribute('ac-needhide')) {
-              node.setAttribute('ac-needhide', '1');
-              node.insertAdjacentHTML('afterbegin', '<span class="ac-block-show" style="display:block;cursor:pointer;color:#999;padding:4px 0;" title="\u70B9\u51FB\u663E\u793A">blocked: ' + host + '</span>');
-              node.addEventListener('click', function(ev) {
-                const btn = node.querySelector('.ghhider.ghhb');
-                if (btn) btn.setAttribute('ac-user-alter', '1');
-                node.removeAttribute('ac-needhide');
-                const bs = node.querySelector('.ac-block-show');
-                if (bs) bs.remove();
-                ev.stopPropagation();
-                ev.preventDefault();
-              });
-            }
-          }
+      if (isBlocked) {
+        if (config.isBlockResultDisplay) {
+          node.remove();
         } else {
-          node.removeAttribute('ac-needhide');
+          if (!node.hasAttribute('ac-needhide')) {
+            node.setAttribute('ac-needhide', '1');
+            node.insertAdjacentHTML('afterbegin', '<span class="ac-block-show" style="display:block;cursor:pointer;color:#999;padding:4px 0;" title="\u70B9\u51FB\u663E\u793A">blocked: ' + host + '</span>');
+            node.addEventListener('click', function(ev) {
+              const btn = node.querySelector('.ghhider.ghhb');
+              if (btn) btn.setAttribute('ac-user-alter', '1');
+              node.removeAttribute('ac-needhide');
+              const bs = node.querySelector('.ac-block-show');
+              if (bs) bs.remove();
+              ev.stopPropagation();
+              ev.preventDefault();
+            });
+          }
         }
-        node.dataset.checked = '1';
-      }
-      if (idx < allNodes.length) {
-        requestAnimationFrame(batch);
       } else {
-        _blockFilterDone = true;
-        isBlockChecking = false;
-        if (currentSite === 'bing') fixBingImgCapLayout();
+        node.removeAttribute('ac-needhide');
       }
-    };
-    requestAnimationFrame(batch);
+    });
+
+    isBlockChecking = false;
   }
 
   // 全局block按钮事件委托（只绑定一次）
@@ -3993,14 +4070,13 @@ body[baidu] #foot a:hover {
     // 加载保存的位置（兼容 Tampermonkey/Violentmonkey）
     let savedPos = null;
     (async () => {
-      try { const raw = await GM.getValue(BTN_POS_KEY, null); savedPos = (raw && typeof raw === 'string') ? JSON.parse(raw) : raw; } catch (e) { /* ignore */ }
-      tryRestorePos();
+      try { savedPos = await GM.getValue(BTN_POS_KEY, null); } catch (e) { /* ignore */ }
+      restorePos();
     })();
 
     const container = document.createElement('div');
     container.id = 'ac-float-btn';
-    // 默认右下角用 CSS，不是 JS — 避免 offsetWidth=0 竞态
-    container.style.cssText = 'position:fixed;z-index:10000000;cursor:grab;user-select:none;right:20px;bottom:80px;';
+    container.style.cssText = 'position:fixed;z-index:10000000;cursor:grab;user-select:none;';
     document.body.appendChild(container);
 
     // 拖拽手柄（hover 显示）
@@ -4016,11 +4092,7 @@ body[baidu] #foot a:hover {
     btn.textContent = '\u2699';
     btn.style.cssText = 'display:block;width:42px;height:42px;background:#4e6ef2;color:#fff;font-size:20px;font-weight:700;border:none;border-radius:50%;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.25);line-height:42px;text-align:center;padding:0;transition:transform 0.15s,background 0.2s;';
     btn.title = 'AC-Search 设置';
-    btn.addEventListener('click', (e) => {
-      if (moved) return; // 拖拽过则不打开设置
-      e.preventDefault(); e.stopPropagation();
-      toggleSettings();
-    });
+    btn.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); toggleSettings(); });
     btn.addEventListener('mouseenter', () => { btn.style.background = '#3d5bd9'; btn.style.transform = 'scale(1.1)'; });
     btn.addEventListener('mouseleave', () => { btn.style.background = '#4e6ef2'; btn.style.transform = 'scale(1)'; });
     container.appendChild(btn);
@@ -4052,8 +4124,6 @@ body[baidu] #foot a:hover {
         if (Math.abs(e.clientX - startX) <= THRESHOLD && Math.abs(e.clientY - startY) <= THRESHOLD) return;
         moved = true;
         container.style.cursor = 'grabbing';
-        container.style.right = '';
-        container.style.bottom = '';
         container.style.left = origLeft + 'px';
         container.style.top = origTop + 'px';
       }
@@ -4069,21 +4139,21 @@ body[baidu] #foot a:hover {
       document.removeEventListener('mouseup', onUp);
       container.style.cursor = 'grab';
       if (moved) {
+        const w = container.offsetWidth;
+        const h = container.offsetHeight;
         const rect = container.getBoundingClientRect();
-        const right = Math.round(window.innerWidth - rect.right);
-        const bottom = Math.round(window.innerHeight - rect.bottom);
-        container.style.right = right + 'px';
-        container.style.bottom = bottom + 'px';
-        container.style.left = '';
-        container.style.top = '';
-        GM.setValue(BTN_POS_KEY, JSON.stringify({ right, bottom }));
+        const pos = clampAndSnap(rect.left, rect.top, w, h);
+        container.style.left = pos.left + 'px';
+        container.style.top = pos.top + 'px';
+        GM.setValue(BTN_POS_KEY, JSON.stringify({ left: pos.left, top: pos.top }));
       }
+      moved = false;
+      dragging = false;
       grip.style.opacity = '0';
-      // 延迟清零：让同步 click 事件能读到 moved=true 从而跳过
-      setTimeout(() => { moved = false; dragging = false; }, 0);
     }
 
     container.addEventListener('mousedown', function (e) {
+      if (e.target.tagName === 'BUTTON') return; // 不拦截按钮点击
       e.preventDefault();
       dragging = true;
       moved = false;
@@ -4096,101 +4166,20 @@ body[baidu] #foot a:hover {
       document.addEventListener('mouseup', onUp);
     });
 
-    function tryRestorePos() {
-      if (!container.offsetWidth) { setTimeout(tryRestorePos, 50); return; } // 未 layout
-      if (!savedPos || typeof savedPos.right !== 'number' || typeof savedPos.bottom !== 'number') return; // 无保存位置=保持默认CSS
-      container.style.right = Math.max(0, savedPos.right) + 'px';
-      container.style.bottom = Math.max(0, savedPos.bottom) + 'px';
-      container.style.left = '';
-      container.style.top = '';
-    }
-  }
-
-  function insertBackToTopButton() {
-    if (!config.showBackToTop) return;
-    if (document.getElementById('ac-top-btn')) return;
-
-    const TOP_BTN_KEY = 'acSearchTopBtnPos';
-    let savedPosTop = null;
-    (async () => {
-      try { const raw = await GM.getValue(TOP_BTN_KEY, null); savedPosTop = (raw && typeof raw === 'string') ? JSON.parse(raw) : raw; } catch (e) {}
-      tryRestoreTopPos();
-    })();
-
-    const container = document.createElement('div');
-    container.id = 'ac-top-btn';
-    container.style.cssText = 'position:fixed;bottom:70px;right:30px;z-index:9999999;cursor:grab;opacity:0;transition:opacity 0.3s;';
-    document.body.appendChild(container);
-
-    const btn = document.createElement('button');
-    btn.textContent = '\u25B2';
-    btn.title = '回到顶部';
-    btn.style.cssText = 'display:block;width:42px;height:42px;background:#4e6ef2;color:#fff;font-size:18px;font-weight:700;border:none;border-radius:50%;cursor:inherit;box-shadow:0 4px 14px rgba(0,0,0,.25);pointer-events:none;';
-    container.appendChild(btn);
-
-    // 滚动显隐
-    window.addEventListener('scroll', $.throttle(() => {
-      container.style.opacity = (window.scrollY || document.documentElement.scrollTop) > 400 ? '1' : '0';
-    }, 200));
-
-    // 点击回顶（拖拽过则跳过）
-    let topMoved = false;
-    container.addEventListener('click', () => {
-      if (topMoved) { topMoved = false; return; }
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
-
-    // 拖拽逻辑
-    let dragging = false, startX = 0, startY = 0, origLeft = 0, origTop = 0;
-    const THRESHOLD = 3;
-
-    function onMove(e) {
-      if (!topMoved) {
-        if (Math.abs(e.clientX - startX) <= THRESHOLD && Math.abs(e.clientY - startY) <= THRESHOLD) return;
-        topMoved = true;
-        container.style.cursor = 'grabbing';
-        container.style.right = '';
-        container.style.bottom = '';
-        container.style.left = origLeft + 'px';
-        container.style.top = origTop + 'px';
-      }
-      container.style.left = (origLeft + (e.clientX - startX)) + 'px';
-      container.style.top = (origTop + (e.clientY - startY)) + 'px';
-    }
-
-    function onUp() {
-      document.removeEventListener('mousemove', onMove);
-      document.removeEventListener('mouseup', onUp);
-      container.style.cursor = 'grab';
-      if (topMoved) {
-        const rect = container.getBoundingClientRect();
-        container.style.left = '';
-        container.style.top = '';
-        container.style.right = (window.innerWidth - rect.right) + 'px';
-        container.style.bottom = (window.innerHeight - rect.bottom) + 'px';
-        GM.setValue(TOP_BTN_KEY, JSON.stringify({ right: Math.round(window.innerWidth - rect.right), bottom: Math.round(window.innerHeight - rect.bottom) }));
+    function restorePos() {
+      if (savedPos && typeof savedPos.left === 'number' && typeof savedPos.top === 'number') {
+        const w = container.offsetWidth || 42;
+        const h = container.offsetHeight || 50;
+        const pos = clampAndSnap(savedPos.left, savedPos.top, w, h);
+        container.style.left = pos.left + 'px';
+        container.style.top = pos.top + 'px';
+      } else {
+        // 默认右下角
+        container.style.right = '20px';
+        container.style.bottom = '80px';
       }
     }
-
-    container.addEventListener('mousedown', function (e) {
-      e.preventDefault();
-      topMoved = false;
-      dragging = true;
-      startX = e.clientX;
-      startY = e.clientY;
-      const rect = container.getBoundingClientRect();
-      origLeft = rect.left;
-      origTop = rect.top;
-      document.addEventListener('mousemove', onMove);
-      document.addEventListener('mouseup', onUp);
-    });
-
-    function tryRestoreTopPos() {
-      if (!container.offsetWidth) { setTimeout(tryRestoreTopPos, 50); return; }
-      if (!savedPosTop || typeof savedPosTop.right !== 'number' || typeof savedPosTop.bottom !== 'number') return;
-      container.style.right = Math.max(0, savedPosTop.right) + 'px';
-      container.style.bottom = Math.max(0, savedPosTop.bottom) + 'px';
-    }
+    setTimeout(restorePos, 100);
   }
 
   // ===================== 自动翻页 =====================
@@ -4201,12 +4190,18 @@ body[baidu] #foot a:hover {
   function getFullHref(el) {
     if (!el) return '';
     if (typeof el === 'string') return el;
-    try { return new URL(el.getAttribute('href') || el.href || '', location.href).href; } catch (e) { return ''; }
+    const href = el.getAttribute('href') || el.href || '';
+    const a = document.createElement('a');
+    a.href = href;
+    return a.href;
   }
 
   // Pager分隔符图标 (base64)
   const PAGER_ICONS = {
     top: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAWCAYAAADEtGw7AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAWtJREFUeNrclE0rRGEUx8c1GUpRJIVIZGdhZCVr38GGhaI0ZXwCkiglShZEcvJxhdgYWOjLEUpmEyiLzze+o8dTzdO3PljoVTv7rPc85d+6555xYrEhWop6boda5+6l9wjWcWpF+WIbqCJJ9hFRcDr3QAIkIhKugz5PDfkSixkphz5aiAnqgE8rgWRxGoSOPyBkswQuUwyscw4HrmFCZL8KtJAg7mEFPEmo4FdPwk0BUcsdzIap0TQ8qMAPuICcEjLnd+VjSjcfJNgIcDkZGSymYGsnK9EZMrxe4MFaNGiZjC2fT5zQ3p7QDK1dR2GSljziclAvRUe8nHYVA4jjvC43NfAuksmB2QNqcsWxKcLbAKTFnS0hWD6n27Fd6FLqiDI5iQmQ9jpiVT0sNJ6aYd7dAE3QHBbinSAX5JWWaxuLo8F35jhbBK9Y+rCl6pLcnna8NvuDGMnslpbZRpXZYT3r4EGACZL3ZL2afNFAAAAABJRU5ErkJggg==',
+    bottom: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAWCAYAAADEtGw7AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAXFJREFUeNrM1c8rBGEcxFdtCEkLqYtpdwkKSUHUhxwITdK+Z3yM2cOLnJ39Cc44SgHScmJwlFxsIdlCScO62t76Onp52dXTtbnno1M8+Pz84+zzMzkcgKA3oRTzM0A4cI4VTdIUVPIM3pPGO5aABJTkGx1BqjYmFFZxW7nnBwXmXogWX6bEGc2jEIU7+kNWDUSSwZyqndSvJ3N1g2Bm0oLtB2j+w7rQP4MpqXzRT0YRaPWBthMedYLs60HsoE2vq9BsPwAJa8XFLUa0fUrvROosaT1Q9adGimdlt8yj6TT6Q6d2vaida9YRbtP6EqmBZC5fHA6X+AAz1bwEc6cfk9+oaZM4NoZJL70+J2hTaZtNpet041zK8yPMgl+rOF1emr0UM1xnAfEPyISd0Jno6vtx+QuM6PZ22lpO7dbEV2Siv6rPeIjNs1HdYC7ixfG+YBqdTVDqPIv6iIWvO7iXGUFxAqi72PraJ9IH8EGACQcYjYRd5GHwAAAABJRU5ErkJggg==',
+    pre: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAWCAYAAADEtGw7AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAASlJREFUeNpiYBjOoBiIrwJxFRAzUsvQViD+CMTgfgTEPdRy9BPUENh+AsQ91JiaAuSS9HxZ3INb8Hi0v+UurwF6qLROBvQNxDrKFfkTT+A+JnQPwBKfJAL9Ian7ic7kMEHcC8Q80F3UAcRsQv4by30INaUJT9weaWhSQDRUB4uVYvLkYiAWAOBopvEFBlArEPEA8G4ue9UAsATM4EYuCJUgKMtAMLoSKCwPxXCx6c1igClTQgmUZVPNrHMEGy3mgYCkCYiYgTkCSV4UZvA2IjYBIqbjlRi/PohkK48xEJLggoQ+FZ8hRSK9vAJ0AzEJYrwG69BRiYr6YhP5RLrK0mGcmE+CFKQ7D+TDps14sEAIIBfw4GU0nsJhlFxGBtxhCHgRy9JmHOshbkcfGFwYrYuq3UDBf/FBgAqDOnLghCOdwAAAAASUVORK5CYII=',
+    next: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAWCAYAAADEtGw7AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAT1JREFUeNrc1b1KA0EYheEliARFFEkKl6D0UK8CrEVrCwEexFCtBIlRWIjsfEiLL0FKzs7QUWxM2piFMUkvhPOwLAs2TGuCn7wkNll5jC7+w0Jgv9avdjAObbQn1TwCu7QwhWW4xakPIOHMKzxGCaSCm6ioXHLZ0Hqpz7KrwRPIvvNvBlM2zYyNY8cMjhDHo9fCBzErnIqKNjgRSxpvIABbOLes2MKWHfuXdhXcR2avKrJ4zGhI9gLhQbq9XaZgGO1kutIOzIHpKp7NawhjYOINSeY6lFwHacw17P6NTWHd4xqnNbcS83LObtsaCPbEW+gXUW8ODswC27xoOsn3ODDmfOGss9XLuE54jGjvPqGuuG1mFDzZIfdNHynnde7DbW1r5DwTstJHP2iE55YqD36ebXZDvr+7LsU4ABAIpVZWnoA5GkAAAAAElFTkSuQmCC',
   };
 
   async function loadNextPage() {
@@ -4267,34 +4262,20 @@ body[baidu] #foot a:hover {
           pageNum++;
           const sep = document.createElement('div');
           sep.className = 'ac-sp-separator';
-          sep.style.cssText = 'margin:0;padding:0;height:0;';
-          sep.innerHTML = '';
+          sep.style.cssText = 'text-align:center;padding:10px;margin:10px 0;';
+          sep.innerHTML = '<a href="' + url + '" target="_blank">第 ' + pageNum + ' 页</a> ' +
+            '<span class="ac-sp-top" style="cursor:pointer;display:inline-block;width:22px;height:22px;background:url(' + PAGER_ICONS.top + ') no-repeat center/contain;"></span>';
 
           if (insertMode === 1) {
             targetEl.parentNode?.insertBefore(sep, targetEl);
             pageItems.forEach(item => targetEl.parentNode?.insertBefore(item, targetEl));
           } else {
             targetEl.appendChild(sep);
-            if (currentSite === 'google' && +config.adsStyleMode >= 3) {
-              // 多列模式：翻页条目放入独立 grid 容器，不影响已有元素的网格排列
-              const pageGrid = document.createElement('div');
-              pageGrid.style.cssText = 'display:grid !important;grid-template-columns:repeat(2,1fr);gap:16px;grid-column:1/-1;width:100%!important;';
-              pageItems.forEach((item, i) => {
-                item.classList.add('ac-entry-ani');
-                item.style.animationDelay = (i * 0.04) + 's';
-                pageGrid.appendChild(item);
-              });
-              targetEl.appendChild(pageGrid);
-            } else {
-              // 单列或其他引擎：直接追加，不改变已有排列
-              pageItems.forEach((item, i) => {
-                item.classList.add('ac-entry-ani');
-                item.style.animationDelay = (i * 0.04) + 's';
-                targetEl.appendChild(item);
-              });
-            }
-            if (currentSite === 'bing') fixBingImgCapLayout();
-            if (currentSite === 'google') markGoogleTwoLine();
+            pageItems.forEach((item, i) => {
+              item.classList.add('ac-entry-ani');
+              item.style.animationDelay = (i * 0.04) + 's';
+              targetEl.appendChild(item);
+            });
           }
 
           // 替换翻页元素（只替换第一个匹配，不要求长度相等）
@@ -4306,36 +4287,17 @@ body[baidu] #foot a:hover {
                 oriEl[0].outerHTML = repEl[0].outerHTML;
               }
             } catch (e) { /* ignore */ }
-          } else {
-            // replaceE 为 null 时，手动更新翻页链接（Bing/Google 依赖此逻辑推进页码）
-            try {
-              const oldEl = siteCfg.pager.nextLinkFn ? siteCfg.pager.nextLinkFn() : null;
-              if (oldEl) {
-                let newEl = null;
-                if (currentSite === 'bing') newEl = doc.querySelector('a.sb_pagN');
-                else if (currentSite === 'google') newEl = doc.getElementById('pnnext');
-                if (newEl) {
-                  const nextUrl = getFullHref(newEl);
-                  if (nextUrl && nextUrl !== url) oldEl.href = nextUrl;
-                } else {
-                  oldEl.remove();
-                }
-              }
-            } catch (e) { /* ignore */ }
           }
 
           if (siteCfg.pager.stylish) {
             injectStyle('pager-css', siteCfg.pager.stylish);
           }
+          // 翻页成功，清除缓存 url 以允许下一页
+          pageUrl = '';
         } catch (e) {
           /* ignore */
         }
         isPageLoading = false;
-      },
-      ontimeout: function () {
-        loader.remove();
-        isPageLoading = false;
-        pageUrl = '';
       },
       onerror: function () {
         loader.remove();
@@ -4343,76 +4305,6 @@ body[baidu] #foot a:hover {
         pageUrl = '';
       },
     });
-  }
-
-  function fixBingImgCapLayout() {
-    if (currentSite !== 'bing') return;
-    // 转换 rms_iac → img
-    document.querySelectorAll('div.rms_iac').forEach(el => {
-      const imgSrc = el.dataset.src;
-      if (!imgSrc) return;
-      const img = document.createElement('img');
-      img.src = imgSrc;
-      if (el.dataset.height) img.height = el.dataset.height;
-      if (el.dataset.width) img.width = el.dataset.width;
-      if (el.dataset.class) img.className = el.dataset.class;
-      if (el.dataset.bm) img.setAttribute('data-bm', el.dataset.bm);
-      img.setAttribute('data-priority', '2');
-      img.setAttribute('role', 'presentation');
-      el.replaceWith(img);
-    });
-    // 强制恢复 b_imgcap_altitle flex 布局（内联 !important 完胜 Bing JS）
-    document.querySelectorAll('#b_results .b_imgcap_altitle').forEach(el => {
-      el.style.setProperty('display', 'flex', 'important');
-      el.style.setProperty('align-items', 'center', 'important');
-      const imgCap = el.querySelector('.b_imgcap_img');
-      if (imgCap) {
-        imgCap.style.setProperty('flex-shrink', '0', 'important');
-        imgCap.style.setProperty('margin-right', '16px', 'important');
-        imgCap.style.setProperty('width', 'auto', 'important');
-      }
-      const h2 = el.querySelector('.b_imgcap_main h2');
-      if (h2) {
-        h2.style.setProperty('margin', '0', 'important');
-        h2.style.setProperty('padding', '0', 'important');
-      }
-    });
-  }
-
-  // 监听 Bing JS 初始化 DOM 变更，实时修复图文卡片布局
-  function watchBingInitialization() {
-    if (currentSite !== 'bing') return;
-    const observer = new MutationObserver(() => {
-      if (document.querySelector('#b_results div.rms_iac') || document.querySelector('#b_results .b_imgcap_altitle')) {
-        fixBingImgCapLayout();
-      }
-    });
-    observer.observe(document.body, {
-      childList: true, subtree: true,
-      attributes: true, attributeFilter: ['style']
-    });
-    // 5 秒后首次初始化应已完成，断开 observer 降为纯主循环兜底
-    setTimeout(() => observer.disconnect(), 5000);
-  }
-
-  // 预隐层: 结果元素出现即处理，不等主循环 500ms — 用户看不到未处理状态
-  function watchResultsReady() {
-    const observer = new MutationObserver(() => {
-      if (!document.querySelector(siteCfg.main)) return;
-      observer.disconnect();
-
-      applyBlockFilter();
-      if (currentSite === 'google') markGoogleTwoLine();
-      if (currentSite === 'bing') fixBingImgCapLayout();
-
-      // 双 rAF 确保 rAF 分批全部完成后再移除隐层
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          document.documentElement.classList.remove('ac-loading');
-        });
-      });
-    });
-    observer.observe(document.documentElement, { childList: true, subtree: true });
   }
 
   function bindPagerScroll() {
@@ -4430,12 +4322,6 @@ body[baidu] #foot a:hover {
         loadNextPage();
       }
     }, 200));
-
-    // 内容高度不够无法触发滚动 → 直接加载下一页
-    setTimeout(() => {
-      if (!config.isAutopage || isPageLoading) return;
-      if (Math.max(document.documentElement.scrollHeight, document.body.scrollHeight) <= window.innerHeight) loadNextPage();
-    }, 500);
   }
 
   // ===================== Google 双列标记 =====================
@@ -4525,7 +4411,7 @@ body[baidu] #foot a:hover {
 
     // 从 Google 结果项出发
     const gList = document.querySelectorAll(
-      '.g:not([two-checked*="8"]), .cUnQKe:not([two-checked*="8"]), .Ww4FFb:not([two-checked*="8"]), .MjjYud:not([two-checked*="8"])'
+      '.g:not([two-checked*="8"]), .cUnQKe:not([two-checked*="8"]), .Ww4FFb:not([two-checked*="8"])'
     );
     [...gList].filter(one => MarkMine(one));
   }
@@ -4544,8 +4430,8 @@ body[baidu] #foot a:hover {
       }, 3000);
     }
 
-    // 百度: 禁用搜索建议cookie（已设置则跳过）
-    if (currentSite === 'baidu' && config.baidu_doRemoveSug && !document.cookie.includes('ISSW=1')) {
+    // 百度: 禁用搜索建议cookie
+    if (currentSite === 'baidu' && config.baidu_doRemoveSug) {
       $.safeFn(() => {
         const d = new Date();
         d.setTime(d.getTime() + 30 * 24 * 60 * 60 * 1000);
@@ -4595,7 +4481,6 @@ body[baidu] #foot a:hover {
         addBlockButtons();
         applyBlockFilter();
       }
-      if (currentSite === 'bing') fixBingImgCapLayout();
     }, 500);
 
     // 30秒后降低频率，但保留全部功能
@@ -4617,10 +4502,8 @@ body[baidu] #foot a:hover {
           addBlockButtons();
           applyBlockFilter();
         }
-        if (currentSite === 'bing') fixBingImgCapLayout();
       }, 3000);
     }, 30000);
-    window.addEventListener('beforeunload', () => { if (mainLoopTimer) clearInterval(mainLoopTimer); });
   }
 
   // ===================== Vue 3 设置面板 =====================
@@ -4721,6 +4604,11 @@ body[baidu] #foot a:hover {
   // 标签页
   const TABS = [
     { key: 'general', label: '通用' },
+    { key: 'baidu', label: '百度' },
+    { key: 'google', label: '谷歌' },
+    { key: 'bing', label: '必应' },
+    { key: 'duck', label: '鸭鸭' },
+    { key: 'haosou', label: '好搜' },
   ];
 
   const SettingsPanel = defineComponent({
@@ -4797,11 +4685,7 @@ body[baidu] #foot a:hover {
           toggleItem('启用去广告', 'isAdsEnable', cfg),
           toggleItem('启用Favicon图标', 'isFaviconEnable', cfg),
           toggleItem('启用自动翻页', 'isAutopage', cfg),
-          toggleItem('启用转到顶部按钮', 'showBackToTop', cfg),
           toggleItem('启用计数器', 'isCounterEnable', cfg),
-
-          h('div', { style: { fontSize: '13px', fontWeight: 'bold', color: '#4e6ef2', margin: '12px 0 8px', borderBottom: '1px solid #eee', paddingBottom: '4px' } }, '支持网站'),
-          h('div', { style: { fontSize: '12px', color: '#666', lineHeight: '1.8' } }, '百度 · Google · Bing · DuckDuckGo'),
 
           h('div', { style: { fontSize: '13px', fontWeight: 'bold', color: '#4e6ef2', margin: '12px 0 8px', borderBottom: '1px solid #eee', paddingBottom: '4px' } }, '显示设置'),
           h('div', { style: { margin: '8px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' } }, [
@@ -4865,6 +4749,21 @@ body[baidu] #foot a:hover {
             h('button', { onClick: resetAll, style: { padding: '6px 16px', background: '#e74c3c', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' } }, '重置默认'),
           ]),
         ]) : null,
+
+        // 引擎特定设置
+        activeTab.value === 'baidu' ? h('div', {}, [
+          toggleItem('移除搜索建议', 'baidu_doRemoveSug', cfg),
+          toggleItem('移除AI搜索结果', 'baidu_doRemoveAIGen', cfg),
+        ]) : null,
+        activeTab.value === 'google' ? h('div', {}, [
+          toggleItem('使用百度Logo', 'google_useBaiduLogo', cfg),
+        ]) : null,
+        activeTab.value === 'bing' ? h('div', {}, [
+          toggleItem('优化必应', 'bing_optimizeBing', cfg),
+        ]) : null,
+        activeTab.value === 'duck' ? h('div', {}, [
+          toggleItem('优化鸭鸭', 'duck_optimizeDuck', cfg),
+        ]) : null,
       ];
     },
   });
@@ -4910,6 +4809,19 @@ body[baidu] #foot a:hover {
         }),
       ]),
     ]);
+  }
+
+  function btnStyle(color = '#4e6ef2') {
+    return {
+      padding: '8px 20px',
+      background: color,
+      color: 'white',
+      border: 'none',
+      borderRadius: '6px',
+      cursor: 'pointer',
+      fontWeight: 'bold',
+      fontSize: '13px',
+    };
   }
 
   function openSettings() {
@@ -4961,7 +4873,6 @@ body[baidu] #foot a:hover {
       // 不是搜索引擎页面，不执行
       return;
     }
-    document.documentElement.classList.add('ac-loading');
 
     // 注入CSS
     $.waitEl('head', () => {
@@ -4977,10 +4888,6 @@ body[baidu] #foot a:hover {
         [ac-needhide] .ac-block-show { display:block;cursor:pointer;color:#999;padding:4px 0; }
         [ac-needhide] > :not(.ac-block-show) { display:none; }
         .ac-counter { background:#FD9999 !important; }
-        .ac-loading #rso,
-        .ac-loading #b_results,
-        .ac-loading #content_left,
-        .ac-loading .react-results--main { content-visibility: hidden; }
       `, 'ac-global');
 
       reloadAllCSS();
@@ -4989,7 +4896,6 @@ body[baidu] #foot a:hover {
       $.waitEl('body', () => {
         setTimeout(() => {
           insertMenuButton();
-          insertBackToTopButton();
           bindPagerScroll();
         }, 1000);
       });
@@ -5009,8 +4915,6 @@ body[baidu] #foot a:hover {
 
     // 特殊处理
     handleSpecialCases();
-    watchBingInitialization();
-    watchResultsReady();
 
     // 监听跨标签同步
     GM.addChangeListener(STORAGE_KEY, async () => {
@@ -5037,7 +4941,6 @@ body[baidu] #foot a:hover {
     });
     const rso = document.getElementById('rso');
     if (rso) mo.observe(rso, { childList: true, subtree: true, attributes: false });
-    setTimeout(() => mo.disconnect(), 10000);
   }
   setTimeout(watchGoogleVt6azd, 500);
 
