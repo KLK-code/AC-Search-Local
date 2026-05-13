@@ -5,7 +5,7 @@
 // @description  本地化搜索引擎优化：去重定向、去广告、Favicon、双列/多列布局、暗黑模式、自动翻页、域名拦截
 // @author       AC (Local Fork)
 // @license      GPL-3.0-only
-// @version      1.0.38
+// @version      1.0.39
 // @run-at       document-start
 // @namespace    ac-search-local
 // @grant        GM_getValue
@@ -4249,11 +4249,6 @@ body[baidu] #foot a:hover {
           /* ignore */
         }
         isPageLoading = false;
-        // 内容高度仍不够 → 继续加载下一页
-        setTimeout(() => {
-          if (!config.isAutopage || isPageLoading) return;
-          if (Math.max(document.documentElement.scrollHeight, document.body.scrollHeight) <= window.innerHeight) loadNextPage();
-        }, 300);
       },
       ontimeout: function () {
         loader.remove();
@@ -4342,23 +4337,13 @@ body[baidu] #foot a:hover {
     let lastScroll = window.scrollY || document.documentElement.scrollTop;
     window.addEventListener('scroll', $.throttle(function () {
       const st = window.scrollY || document.documentElement.scrollTop;
-      const delta = st - lastScroll;
+      if (st <= lastScroll) return; // 只下滑
       lastScroll = st;
-      if (delta <= 0) return; // 只在下滑时触发
       if (!config.isAutopage || isPageLoading) return;
 
-      const scrollDelta = 888;
       const docH = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
-      if (docH <= window.innerHeight + st + scrollDelta) {
-        loadNextPage();
-      }
+      if (st + window.innerHeight >= docH) loadNextPage();
     }, 200));
-
-    // 内容高度不够无法触发滚动 → 直接加载下一页
-    setTimeout(() => {
-      if (!config.isAutopage || isPageLoading) return;
-      if (Math.max(document.documentElement.scrollHeight, document.body.scrollHeight) <= window.innerHeight) loadNextPage();
-    }, 500);
   }
 
   // ===================== Google 双列标记 =====================
