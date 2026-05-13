@@ -5,7 +5,7 @@
 // @description  本地化搜索引擎优化：去重定向、去广告、Favicon、双列/多列布局、暗黑模式、自动翻页、域名拦截
 // @author       AC (Local Fork)
 // @license      GPL-3.0-only
-// @version      1.0.49
+// @version      1.0.50
 // @run-at       document-start
 // @namespace    ac-search-local
 // @grant        GM_getValue
@@ -4116,18 +4116,87 @@ body[baidu] #foot a:hover {
     if (!config.showBackToTop) return;
     if (document.getElementById('ac-top-btn')) return;
 
+    const TOP_BTN_KEY = 'acSearchTopBtnPos';
+    let savedPosTop = null;
+    (async () => {
+      try { const raw = await GM.getValue(TOP_BTN_KEY, null); savedPosTop = (raw && typeof raw === 'string') ? JSON.parse(raw) : raw; } catch (e) {}
+      tryRestoreTopPos();
+    })();
+
+    const container = document.createElement('div');
+    container.id = 'ac-top-btn';
+    container.style.cssText = 'position:fixed;bottom:70px;right:30px;z-index:9999999;cursor:grab;opacity:0;transition:opacity 0.3s;';
+    document.body.appendChild(container);
+
     const btn = document.createElement('button');
-    btn.id = 'ac-top-btn';
     btn.textContent = '\u25B2';
     btn.title = '回到顶部';
-    btn.style.cssText = 'position:fixed;bottom:110px;right:20px;z-index:10000000;width:42px;height:42px;background:#4e6ef2;color:#fff;font-size:18px;font-weight:700;border:none;border-radius:50%;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.25);opacity:0;transition:opacity 0.3s;';
-    btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+    btn.style.cssText = 'display:block;width:42px;height:42px;background:#4e6ef2;color:#fff;font-size:18px;font-weight:700;border:none;border-radius:50%;cursor:inherit;box-shadow:0 4px 14px rgba(0,0,0,.25);pointer-events:none;';
+    container.appendChild(btn);
 
+    // 滚动显隐
     window.addEventListener('scroll', $.throttle(() => {
-      btn.style.opacity = (window.scrollY || document.documentElement.scrollTop) > 400 ? '1' : '0';
+      container.style.opacity = (window.scrollY || document.documentElement.scrollTop) > 400 ? '1' : '0';
     }, 200));
 
-    document.body.appendChild(btn);
+    // 点击回顶（拖拽过则跳过）
+    let topMoved = false;
+    container.addEventListener('click', () => {
+      if (topMoved) { topMoved = false; return; }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // 拖拽逻辑
+    let dragging = false, startX = 0, startY = 0, origLeft = 0, origTop = 0;
+    const THRESHOLD = 3;
+
+    function onMove(e) {
+      if (!topMoved) {
+        if (Math.abs(e.clientX - startX) <= THRESHOLD && Math.abs(e.clientY - startY) <= THRESHOLD) return;
+        topMoved = true;
+        container.style.cursor = 'grabbing';
+        container.style.right = '';
+        container.style.bottom = '';
+        container.style.left = origLeft + 'px';
+        container.style.top = origTop + 'px';
+      }
+      container.style.left = (origLeft + (e.clientX - startX)) + 'px';
+      container.style.top = (origTop + (e.clientY - startY)) + 'px';
+    }
+
+    function onUp() {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      container.style.cursor = 'grab';
+      if (topMoved) {
+        const rect = container.getBoundingClientRect();
+        container.style.left = '';
+        container.style.top = '';
+        container.style.right = (window.innerWidth - rect.right) + 'px';
+        container.style.bottom = (window.innerHeight - rect.bottom) + 'px';
+        GM.setValue(TOP_BTN_KEY, JSON.stringify({ right: Math.round(window.innerWidth - rect.right), bottom: Math.round(window.innerHeight - rect.bottom) }));
+      }
+    }
+
+    container.addEventListener('mousedown', function (e) {
+      e.preventDefault();
+      topMoved = false;
+      dragging = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      const rect = container.getBoundingClientRect();
+      origLeft = rect.left;
+      origTop = rect.top;
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+
+    function tryRestoreTopPos() {
+      if (!container.offsetWidth) { setTimeout(tryRestoreTopPos, 50); return; }
+      if (!savedPosTop || typeof savedPosTop.right !== 'number' || typeof savedPosTop.bottom !== 'number') return;
+      container.style.right = Math.max(0, savedPosTop.right) + 'px';
+      container.style.bottom = Math.max(0, savedPosTop.bottom) + 'px';
+    }
   }
 
   // ===================== 自动翻页 =====================
