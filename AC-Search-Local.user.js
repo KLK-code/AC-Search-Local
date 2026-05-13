@@ -5,7 +5,7 @@
 // @description  本地化搜索引擎优化：去重定向、去广告、Favicon、双列/多列布局、暗黑模式、自动翻页、域名拦截
 // @author       AC (Local Fork)
 // @license      GPL-3.0-only
-// @version      1.0.31
+// @version      1.0.32
 // @run-at       document-start
 // @namespace    ac-search-local
 // @grant        GM_getValue
@@ -1275,8 +1275,8 @@ body[baidu].pc-fresh-wrapper-con #container.sam_newgrid #content_left {
 #wrapper #content_left,
 #container.sam_newgrid #content_left {
   display: grid;
-  grid-template-columns: repeat(2, 44%);
-  grid-gap: 0 30px;
+  grid-template-columns: repeat(2, 1fr);
+  grid-gap: 0 28px;
   grid-template-areas: "xmain xmain";
   margin: 0 auto;
   position: relative;
@@ -1329,12 +1329,6 @@ body[news] #wrapper #content_left > div:not([class]):not([id]) {
   margin-bottom: 10px !important;
   padding-top: 10px;
   background-color: #f8f8f8;
-}
-/* 百度新版卡片边框容器收窄，防溢出 */
-._content-border_1q9is_4 {
-  width: 100% !important;
-  max-width: 100% !important;
-  overflow: hidden !important;
 }
 .c-container h3 a {
   z-index: 1;
