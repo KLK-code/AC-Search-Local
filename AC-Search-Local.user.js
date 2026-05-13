@@ -5,7 +5,7 @@
 // @description  本地化搜索引擎优化：去重定向、去广告、Favicon、双列/多列布局、暗黑模式、自动翻页、域名拦截
 // @author       AC (Local Fork)
 // @license      GPL-3.0-only
-// @version      1.0.29
+// @version      1.0.30
 // @run-at       document-start
 // @namespace    ac-search-local
 // @grant        GM_getValue
@@ -557,7 +557,11 @@ form.fm .s_ipt_wr.bg {
 #wrapper #rs,
 #wrapper #content_left .result,
 #wrapper #content_left .result-op,
-#wrapper #content_left > .c-container {
+#wrapper #content_left div[class*='vmp-project'],
+#wrapper #content_left > .c-container,
+#container.sam_newgrid #content_left .result,
+#container.sam_newgrid #content_left .result-op,
+#container.sam_newgrid #content_left > .c-container {
   width: 670px;
   padding: 0 8px 15px 20px;
   margin-top: 0;
@@ -1278,7 +1282,8 @@ body[baidu].pc-fresh-wrapper-con #container.sam_newgrid #content_left {
   padding: unset;
   margin: 0 auto;
 }
-#wrapper #content_left {
+#wrapper #content_left,
+#container.sam_newgrid #content_left {
   display: grid;
   grid-template-columns: repeat(2, 48%);
   grid-gap: 0 20px;
