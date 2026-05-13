@@ -5,7 +5,7 @@
 // @description  本地化搜索引擎优化：去重定向、去广告、Favicon、双列/多列布局、暗黑模式、自动翻页、域名拦截
 // @author       AC (Local Fork)
 // @license      GPL-3.0-only
-// @version      1.0.25
+// @version      1.0.26
 // @run-at       document-start
 // @namespace    ac-search-local
 // @grant        GM_getValue
@@ -349,7 +349,7 @@
       pager: {
         nextLink: null,
         nextLinkFn: () => document.getElementById('pnnext'),
-        pageElement: 'css:#rso > *',
+        pageElement: 'css:#rso > .MjjYud',
         insertTo: ['css:#rso', 2],
         replaceE: null,
       },
