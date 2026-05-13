@@ -1292,8 +1292,8 @@ body[baidu].pc-fresh-wrapper-con #container.sam_newgrid #content_left {
 #wrapper #content_left,
 #container.sam_newgrid #content_left {
   display: grid;
-  grid-template-columns: repeat(2, 46%);
-  grid-gap: 0 40px;
+  grid-template-columns: repeat(2, 46%) !important;
+  grid-gap: 0 32px !important;
   grid-template-areas: "xmain xmain";
   margin: 0 auto;
   position: relative;
