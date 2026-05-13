@@ -5,7 +5,7 @@
 // @description  本地化搜索引擎优化：去重定向、去广告、Favicon、双列/多列布局、暗黑模式、自动翻页、域名拦截
 // @author       AC (Local Fork)
 // @license      GPL-3.0-only
-// @version      1.0.20
+// @version      1.0.21
 // @run-at       document-start
 // @namespace    ac-search-local
 // @grant        GM_getValue
@@ -2091,6 +2091,14 @@ g-section-with-header {
 }
 body[google] .rZj61 {
   margin-left: 40%;
+}
+/* 修复 Google 特殊结果容器（图片卡片/知识面板）被双列宽度限制挤压到 41px */
+#rso .z4oRIf,
+#rso #eRsUse {
+  width: 100% !important;
+  max-width: unset !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
 }
 `;
 
