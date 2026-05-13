@@ -562,9 +562,8 @@ form.fm .s_ipt_wr.bg {
 #container.sam_newgrid #content_left .result,
 #container.sam_newgrid #content_left .result-op,
 #container.sam_newgrid #content_left > .c-container {
-  width: 100% !important;
-  max-width: unset;
-  box-sizing: border-box !important;
+  margin-left: 0;
+  margin-right: 0;
 }
 #wrapper #rs.ac-entry-ani,
 #wrapper #content_left .result.ac-entry-ani,
@@ -1276,7 +1275,7 @@ body[baidu].pc-fresh-wrapper-con #container.sam_newgrid #content_left {
 #wrapper #content_left,
 #container.sam_newgrid #content_left {
   display: grid;
-  grid-template-columns: repeat(2, 46%);
+  grid-template-columns: repeat(2, 48%);
   grid-gap: 0 20px;
   grid-template-areas: "xmain xmain";
   margin: 0 auto;
